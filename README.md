@@ -55,7 +55,7 @@ This is a platform that connects buyers as well as end users/buyers together suc
 
     `npm install nodemon --save -dev`
 
-5.  Configure the environment variables (.env)
+5.  Configure the environment variables by creating a `.env` file in the root directory. Enter the following details
 
     ```
     DB_HOST=localhost
@@ -64,6 +64,10 @@ This is a platform that connects buyers as well as end users/buyers together suc
     DB_NAME=your_profile_db
     DB_PORT=your_db_port
     PORT=3000
+    EMAIL_USER=your_email_address
+    EMAIL_PASS=your_email_password
+    EMAIL_PORT=
+    EMAIL_HOST=
     ```
 
 6.  To start the server once, use the following command:
@@ -78,7 +82,7 @@ This is a platform that connects buyers as well as end users/buyers together suc
 
 ## How it works
 
-# Folder Structure
+## Folder Structure
 
 ```
 farmlink-backend/
