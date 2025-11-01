@@ -1,24 +1,8 @@
-{
-"name": "farmlink_backend",
-"version": "1.0.0",
-"description": "",
-"main": "index.js",
-"scripts": {
-"test": "echo \"Error: no test specified\" && exit 1"
-},
-"keywords": [],
-"author": "",
-"license": "ISC",
-"dependencies": {
-"express": "^5.1.0",
-"mysql2": "^3.15.3",
-"sequelize": "^6.37.7"
-},
-  "name": "farmlink_backend",
+{   "name": "farmlink_backend",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "type" : "module",
+   "type": "module",
   "scripts": {
     "start": "node server.js",
     "run dev": "nodemon server.js",
@@ -29,6 +13,10 @@
   "license": "ISC",
   "dependencies": {
     "express": "^5.1.0",
-    "mysql2": "^3.15.3"
+    "multer": "^2.0.2",
+    "mysql2": "^3.15.3",
+    "path": "^0.12.7",
+    "sequelize": "^6.37.7"
   }
+ 
 }
