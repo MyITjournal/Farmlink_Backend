@@ -2,22 +2,22 @@ import multer from "multer";
 import fs from "fs";
 
 const fileUpload = (folder = "uploads/") => {
-  // Create folder if it doesn’t exist
-  if (!fs.existsSync(folder)) {
-    fs.mkdirSync(folder, { recursive: true });
-  }
-  const storage = multer.diskStorage({
-    destination: folder,
-    filename: (req, file, cb) => {
-      const uniqueName = `${Date.now()}-${file.originalname}`;
-      cb(null, uniqueName);
-    },
-  });
+// Create folder if it doesn’t exist
+if (!fs.existsSync(folder)) {
+fs.mkdirSync(folder, { recursive: true });
+}
+const storage = multer.diskStorage({
+destination: folder,
+filename: (req, file, cb) => {
+const uniqueName = `${Date.now()}-${file.originalname}`;
+cb(null, uniqueName);
+},
+});
 
-  return multer({
-    storage,
-    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
-  });
+return multer({
+storage,
+limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+});
 };
 
 export default fileUpload;
