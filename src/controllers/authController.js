@@ -4,42 +4,27 @@ import smsService from "../utils/smsService.js";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 
-// In-memory mocked users store for development/testing only
-const mockUsers = new Map(); // key: email -> user object
-
-/**
- * Issue a development token for testing middleware.
- * This endpoint is intentionally simple: it accepts { id, role, email }
- * and returns a signed JWT. In production, replace this with a real
- * login flow that verifies credentials against your database.
- */
+const mockUsers = new Map();
 const issueToken = (req, res) => {
   const { id, role, email } = req.body || {};
   if (!id || !role || !email) {
-    return res
-      .status(400)
-      .json({
-        success: false,
-        message: "id, role and email are required in body",
-      });
+    return res.status(400).json({
+      success: false,
+      message: "id, role and email are required in body",
+    });
   }
 
   try {
     const token = generateToken({ id, role, email });
     return res.json({ success: true, token });
   } catch (err) {
-    return res
-      .status(500)
-      .json({
-        success: false,
-        message: err.message || "Token generation failed",
-      });
+    return res.status(500).json({
+      success: false,
+      message: err.message || "Token generation failed",
+    });
   }
 };
 
-/**
- * Send verification email (development-friendly). Expects body: { to, subject, text, html }
- */
 const sendVerificationEmail = async (req, res) => {
   const { to, subject, text, html } = req.body || {};
   if (!to || (!text && !html)) {
@@ -90,12 +75,10 @@ const sendTestSms = async (req, res) => {
 const register = async (req, res) => {
   const { email, password, role, ...profile } = req.body || {};
   if (!email || !password || !role)
-    return res
-      .status(400)
-      .json({
-        success: false,
-        message: "email, password and role are required",
-      });
+    return res.status(400).json({
+      success: false,
+      message: "email, password and role are required",
+    });
 
   if (mockUsers.has(email))
     return res
@@ -113,14 +96,12 @@ const register = async (req, res) => {
     email: user.email,
   });
 
-  return res
-    .status(201)
-    .json({
-      success: true,
-      message: "User registered (mock)",
-      user: { id: user.id, email: user.email, role: user.role, ...profile },
-      token,
-    });
+  return res.status(201).json({
+    success: true,
+    message: "User registered (mock)",
+    user: { id: user.id, email: user.email, role: user.role, ...profile },
+    token,
+  });
 };
 
 /**

@@ -4,7 +4,5 @@ node_modules
 scripts/
 docs/
 db.js
-# Ignore development-only scripts folder
 scripts/dev/
-# Ignore sensitive test files
 test-direct-connection.js
