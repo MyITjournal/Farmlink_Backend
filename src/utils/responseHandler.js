@@ -1,18 +1,18 @@
 const successResponse = (res, message, data = {}, status = 200) => {
-  return res.status(status).json({
-    status: "success",
-    message,
-    data,
-  });
+return res.status(status).json({
+status: "success",
+message,
+data,
+});
 };
 
 const errorResponse = (res, message, status = 500, details = null) => {
-  return res.status(status).json({
-    status: "error",
-    message,
+return res.status(status).json({
+status: "error",
+message,
 
-    ...(details && { details }),
-  });
+...(details && { details }),
+});
 };
 
 export default { successResponse, errorResponse };
