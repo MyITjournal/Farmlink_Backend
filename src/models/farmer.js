@@ -9,7 +9,16 @@ const Farmer = sequelize.define(
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
     },
-    fullName: {
+    firstName: {
+      type: DataTypes.STRING(50),
+      allowNull: false,
+    },
+
+    lastName: {
+      type: DataTypes.STRING(50),
+      allowNull: false,
+    },
+    password: {
       type: DataTypes.STRING,
       allowNull: false,
     },

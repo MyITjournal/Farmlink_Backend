@@ -37,46 +37,46 @@ This is a platform that connects buyers as well as end users/buyers together suc
 
 1.  Create a folder where you want the project to be installed.
 
-    `mkdir farmlink_project`
+`mkdir farmlink_project`
 
 2.  Navigate to that folder, for example:
 
-    `cd farmlink_project`
+`cd farmlink_project`
 
 3.  Clone the repository.
 
-    `git clone https://github.com/MyITjournal/Farmlink_Backend.git`
+`git clone https://github.com/MyITjournal/Farmlink_Backend.git`
 
 4.  Install the dependencies
 
-    `npm install`
+`npm install`
 
-    To install the dev dependencies:
+To install the dev dependencies:
 
-    `npm install nodemon --save -dev`
+`npm install nodemon --save -dev`
 
 5.  Configure the environment variables by creating a `.env` file in the root directory. Enter the following details
 
-    ```
-    DB_HOST=localhost
-    DB_USER=root
-    DB_PASSWORD=your_password
-    DB_NAME=your_profile_db
-    DB_PORT=your_db_port
-    PORT=3000
-    EMAIL_USER=your_email_address
-    EMAIL_PASS=your_email_password
-    EMAIL_PORT=
-    EMAIL_HOST=
-    ```
+```
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=your_password
+DB_NAME=your_profile_db
+DB_PORT=your_db_port
+PORT=3000
+EMAIL_USER=your_email_address
+EMAIL_PASS=your_email_password
+EMAIL_PORT=
+EMAIL_HOST=
+```
 
 6.  To start the server once, use the following command:
 
-    `npm start`
+`npm start`
 
-    Alternatively, to ensure that the server automatically restarts whenever changes are effected to the file, run the following command:
+Alternatively, to ensure that the server automatically restarts whenever changes are effected to the file, run the following command:
 
-    `npm run dev`
+`npm run dev`
 
 ## API Endpoints
 
