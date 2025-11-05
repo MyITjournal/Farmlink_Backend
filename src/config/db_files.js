@@ -24,6 +24,6 @@ const connectDB = async () => {
   }
 };
 
-connectDB();
+await connectDB();
 
 export default sequelize;
