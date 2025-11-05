@@ -1,7 +1,7 @@
-import bcrypt from "bcrypt";
-import Farmer from "../models/farmer";
-import Customer from "../models/customer";
-import Op from "sequelize";
+import bcrypt from "bcryptjs";
+import { Op } from "sequelize";
+import Farmer from "../models/farmer.js";
+import Customer from "../models/customer.js";
 export async function registerCustomer(req, res) {
   try {
     const {

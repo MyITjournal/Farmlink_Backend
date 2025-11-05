@@ -1,6 +1,6 @@
 import { DataTypes } from "sequelize";
-import sequelize from "../config/db.js";
-import Farmer from "./farmer.model.js";
+import sequelize from "../config/db_files.js";
+import Farmer from "./farmer.js";
 
 /**
  * Defines the Produce Listing model structure for the MySQL database.
@@ -13,9 +13,9 @@ const Produce = sequelize.define("Produce", {
     autoIncrement: true,
   },
   farmerId: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.UUID,
     references: {
-      model: Farmer, // Foreign Key linking to the Farmer/User
+      model: Farmer,
       key: "id",
     },
     allowNull: false,

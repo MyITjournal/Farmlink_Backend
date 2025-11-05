@@ -6,15 +6,20 @@ import {
   register,
   login,
 } from "../controllers/authController.js";
+import {
+  tokenValidator,
+  sendEmailValidator,
+  sendSmsValidator,
+  authRegisterValidator,
+  authLoginValidator,
+} from "../utils/validators.js";
 
 const router = express.Router();
 
-if (process.env.NODE_ENV === "development") {
-  router.post("/token", issueToken);
-  router.post("/send-email", sendVerificationEmail);
-  router.post("/send-sms", sendTestSms);
-  router.post("/register", register);
-  router.post("/login", login);
-}
+router.post("/token", tokenValidator, issueToken);
+router.post("/send-email", sendEmailValidator, sendVerificationEmail);
+router.post("/send-sms", sendSmsValidator, sendTestSms);
+router.post("/register", authRegisterValidator, register);
+router.post("/login", authLoginValidator, login);
 
 export default router;
