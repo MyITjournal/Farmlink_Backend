@@ -6,16 +6,15 @@ const successResponse = (res, message, data = {}, status = 200) => {
   });
 };
 
-const errorResponse = (res, message, status = 500, details = null) => {
+const errorResponse = (res, message, status = 500, details = null ) =>{
   return res.status(status).json({
     status: "error",
     message,
+    ...(details && { details }),  
+  })
+}
 
-    ...(details && { details }),
-  });
-};
-
-export default { successResponse, errorResponse };
+export { successResponse, errorResponse };
 
 // USAGE FOR successResponse
 // successResponse(res, message, data, status)

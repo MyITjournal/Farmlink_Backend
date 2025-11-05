@@ -1,7 +1,6 @@
 import Customer from "../models/customer.js";
-import responseHandler from "../utils/responseHandler.js";
+import { successResponse ,errorResponse } from "../utils/responseHandler.js";
 
-const { successResponse, errorResponse } = responseHandler;
 
 export const getCustomers = async (req, res) => {
 	try {

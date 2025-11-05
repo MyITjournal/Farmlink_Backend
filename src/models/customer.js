@@ -1,31 +1,28 @@
-import { DataTypes } from "sequelize";
-import sequelize from "../config/db_files.js";
+import { DataTypes, Model } from "sequelize";
+import { sequelize } from "../config/db_files.js";
 
-const Customer = sequelize.define(
-  "Customer",
+class Customer extends Model {} 
+Customer.init(
   {
     id: {
-      type: DataTypes.UUID,
-      defaultValue: DataTypes.UUIDV4,
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
       primaryKey: true,
     },
 
     firstName: {
-      type: DataTypes.STRING(50),
-      allowNull: false,
-    },
-
-    lastName: {
-      type: DataTypes.STRING(50),
-      allowNull: false,
-    },
-    fullName: {
       type: DataTypes.STRING,
       allowNull: false,
     },
 
+    lastName: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+
+
     email: {
-      type: DataTypes.STRING(100),
+      type: DataTypes.STRING,
       allowNull: false,
       unique: true,
       validate: {
@@ -34,7 +31,7 @@ const Customer = sequelize.define(
     },
 
     phone: {
-      type: DataTypes.STRING(20),
+      type: DataTypes.INTEGER,
       allowNull: false,
       unique: true,
     },
@@ -69,8 +66,9 @@ const Customer = sequelize.define(
       type: DataTypes.ENUM("customer", "admin"),
       defaultValue: "customer",
     },
+
     nin: {
-      type: DataTypes.STRING,
+      type: DataTypes.INTEGER,
     },
 
     accountStatus: {
@@ -78,12 +76,9 @@ const Customer = sequelize.define(
       defaultValue: "active",
     },
 
-    profileImage: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
   },
   {
+    sequelize,
     tableName: "Customers",
     timestamps: true,
   }

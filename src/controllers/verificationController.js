@@ -1,9 +1,9 @@
 import crypto from "crypto";
 import Verification from "../models/verification.js";
 import Customer from "../models/customer.js";
-import responseHandler from "../utils/responseHandler.js";
+import { successResponse ,errorResponse } from "../utils/responseHandler.js";
 
-const { successResponse, errorResponse } = responseHandler;
+
 const DEFAULT_EXPIRY_MINUTES = 30;
 
 export const requestVerification = async (req, res) => {

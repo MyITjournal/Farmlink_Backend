@@ -129,7 +129,6 @@ export const rateFarmer = async (req, res) => {
     return errorResponse(res, 500, "Failed to submit rating.", error.message);
   }
 };
-c;
 
 // Export all controller functions
 export default {

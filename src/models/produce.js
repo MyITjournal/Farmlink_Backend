@@ -1,5 +1,5 @@
 import { DataTypes } from "sequelize";
-import sequelize from "../config/db_files.js";
+import { sequelize } from "../config/db_files.js";
 import Farmer from "./farmer.js";
 
 /**

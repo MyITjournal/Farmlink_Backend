@@ -26,4 +26,4 @@ const connectDB = async () => {
 
 await connectDB();
 
-export default sequelize;
+export { sequelize, connectDB };
