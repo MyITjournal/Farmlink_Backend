@@ -6,9 +6,8 @@ import adminRoutes from "./routes/adminRoutes.js";
 import farmerRoutes from "./routes/farmerRoutes.js";
 import produceRoutes from "./routes/produceRoutes.js";
 import customerRoutes from "./routes/customerRoutes.js";
-import verificationRoutes from "./routes/verificationRoutes.js";
-import { protect } from "./middleware/authMiddleware.js";
-import { isAdmin, isFarmer } from "./middleware/roleMiddleware.js";
+import { protect } from "./middlewares/authMiddleware.js";
+import { isAdmin, isFarmer } from "./middlewares/roleMiddleware.js";
 
 dotenv.config();
 
@@ -26,7 +25,6 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/farmers", farmerRoutes);
 app.use("/api/produce", produceRoutes);
 app.use("/api/customers", customerRoutes);
-app.use("/api/verification", verificationRoutes);
 
 // Test endpoints for middleware
 app.get("/api/test/protected", protect, (req, res) => {

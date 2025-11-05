@@ -5,13 +5,13 @@ import {
   toggleProductStatus,
   getFarmerDashboard,
 } from "../controllers/farmerController.js";
-import authMiddleware from "../middlewares/authMiddleware.js";
+import { protect } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
-router.post("/products", authMiddleware, addProduct);
-router.put("/products/:id", authMiddleware, editProduct);
-router.patch("/products/:id/status", authMiddleware, toggleProductStatus);
-router.get("/dashboard", authMiddleware, getFarmerDashboard);
+router.post("/products", protect, addProduct);
+router.put("/products/:id", protect, editProduct);
+router.patch("/products/:id/status", protect, toggleProductStatus);
+router.get("/dashboard", protect, getFarmerDashboard);
 
 export default router;

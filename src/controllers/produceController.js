@@ -1,7 +1,8 @@
-import { Produce } from "../models/index.js";
-import { Farmer } from "../models/index.js";
+import models from "../models/index.js";
 import { Op } from "sequelize";
 import AppError from "../utils/AppError.js";
+
+const { Produce, Farmer } = models;
 
 async function getAllProduceListings(req, res) {
   const { category, minPrice, maxPrice } = req.query;

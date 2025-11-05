@@ -1,6 +1,7 @@
-import { Farmer } from '../models/index.js';
-import { Produce } from '../models/index.js';
+import models from '../models/index.js';
 import AppError from '../utils/AppError.js';
+
+const { Farmer, Produce } = models;
 
 async function getPendingVerifications(req, res) {
 	try {
