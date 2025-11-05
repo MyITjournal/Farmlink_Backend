@@ -1,6 +1,4 @@
 import express from "express";
-import { protect } from "../middleware/authMiddleware.js";
-import { isAdmin } from "../middleware/roleMiddleware.js";
 import {
   getPendingVerifications,
   updateVerificationStatus,
@@ -8,16 +6,14 @@ import {
   removeListing,
   getAdminSummary,
 } from "../controllers/adminController.js";
+import authMiddleware from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
-// Require an authenticated admin for everything in this router
-router.use(protect, isAdmin);
-
-router.get("/pending-verifications", getPendingVerifications);
-router.patch("/verification-status", updateVerificationStatus);
-router.delete("/users/:userId", blockUser);
-router.delete("/listings/:listingId", removeListing);
-router.get("/summary", getAdminSummary);
+router.get("/pending-verifications", authMiddleware, getPendingVerifications);
+router.patch("/verification-status", authMiddleware, updateVerificationStatus);
+router.delete("/users/:userId", authMiddleware, blockUser);
+router.delete("/listings/:listingId", authMiddleware, removeListing);
+router.get("/summary", authMiddleware, getAdminSummary);
 
 export default router;

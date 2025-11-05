@@ -1,22 +1,17 @@
 import express from "express";
-import { protect } from "../middleware/authMiddleware.js";
-import { isFarmer } from "../middleware/roleMiddleware.js";
 import {
-  addProduceListing,
-  updateProduceListing,
-  deactivateListing,
+  addProduct,
+  editProduct,
+  toggleProductStatus,
   getFarmerDashboard,
 } from "../controllers/farmerController.js";
-import { addListingValidator } from "../utils/validators.js";
+import authMiddleware from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
-// Every farmer route requires the user to be an authenticated farmer
-router.use(protect, isFarmer);
-
-router.post("/listings", addListingValidator, addProduceListing);
-router.put("/listings/:listingId", updateProduceListing);
-router.patch("/listings/:listingId/deactivate", deactivateListing);
-router.get("/dashboard", getFarmerDashboard);
+router.post("/products", authMiddleware, addProduct);
+router.put("/products/:id", authMiddleware, editProduct);
+router.patch("/products/:id/status", authMiddleware, toggleProductStatus);
+router.get("/dashboard", authMiddleware, getFarmerDashboard);
 
 export default router;

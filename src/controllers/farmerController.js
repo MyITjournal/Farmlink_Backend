@@ -1,127 +1,138 @@
-// farmer.controller.js
-import Produce from '../models/produce.js';
-import Farmer from '../models/farmer.js';
-import { successResponse, errorResponse } from '../utils/responseHandler.js';
+import Produce from "../models/produce.js";
+import Farmer from "../models/farmer.js";
+import AppError from "../utils/AppError.js";
 
-export const addProduceListing = async (req, res) => {
-const farmerId = req.user.id;
-const { productName, category, quantity, pricePerUnit, harvestDate, description, imageUrls } = req.body;
+// Adding a new product
+async function addProduct(req, res) {
+  try {
+    const { productName, pricePerUnit, quantity } = req.body;
+    const farmerId = req.user.id;
 
-try {
-if (!productName || !category || !quantity || !pricePerUnit) {
-return errorResponse(res, 400, "Missing required product fields.");
+    if (!productName || !pricePerUnit || !quantity) {
+      throw new AppError("Product name, price, and quantity are required", 400);
+    }
+
+    const newProduct = await Produce.create({
+      farmerId,
+      productName,
+      pricePerUnit: parseFloat(pricePerUnit),
+      quantity: parseInt(quantity),
+      status: "Active",
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: "Product added successfully",
+      data: newProduct,
+    });
+  } catch (error) {
+    throw new AppError(error.message || "Server error", 500);
+  }
 }
 
-const newListing = await Produce.create({
-farmerId,
-productName,
-category,
-quantity,
-pricePerUnit,
-harvestDate,
-description,
-imageUrls,
-status: 'Active',
-});
+// Editing an already existing product
+async function editProduct(req, res) {
+  try {
+    const { id } = req.params;
+    const { productName, pricePerUnit, quantity } = req.body;
+    const farmerId = req.user.id;
 
-return successResponse(res, 201, "Product listing created successfully.", newListing);
-} catch (error) {
-console.error('Error creating listing:', error);
-return errorResponse(res, 500, "Failed to create product listing.", error.message);
+    const product = await Produce.findOne({
+      where: { id, farmerId },
+    });
+
+    if (!product) {
+      throw new AppError("Product not found", 404);
+    }
+
+    if (productName) product.productName = productName;
+    if (pricePerUnit) product.pricePerUnit = parseFloat(pricePerUnit);
+    if (quantity) product.quantity = parseInt(quantity);
+
+    await product.save();
+
+    res.json({
+      success: true,
+      message: "Product updated successfully",
+      data: product,
+    });
+  } catch (error) {
+    throw new AppError(error.message || "Server error", 500);
+  }
 }
+
+// To know the status of each product
+async function toggleProductStatus(req, res) {
+  try {
+    const { id } = req.params;
+    const farmerId = req.user.id;
+
+    const product = await Produce.findOne({
+      where: { id, farmerId },
+    });
+
+    if (!product) {
+      throw new AppError("Product not found", 404);
+    }
+
+    if (product.status === "Active") {
+      product.status = "Inactive";
+    } else {
+      product.status = "Active";
+    }
+    await product.save();
+
+    res.json({
+      success: true,
+      message: `Product status changed to ${product.status}`,
+      data: product,
+    });
+  } catch (error) {
+    throw new AppError(error.message || "Server error", 500);
+  }
+}
+
+// Merged farmer dashboard
+async function getFarmerDashboard(req, res) {
+  try {
+    const farmerId = req.user.id;
+
+    const farmer = await Farmer.findByPk(farmerId);
+    if (!farmer) {
+      throw new AppError("Farmer not found", 404);
+    }
+
+    const products = await Produce.findAll({
+      where: { farmerId },
+      order: [["createdAt", "DESC"]],
+    });
+
+    const totalProducts = products.length;
+    const activeProducts = products.filter((p) => p.status === "Active").length;
+
+    res.json({
+      success: true,
+      message: "Dashboard loaded successfully",
+      data: {
+        farmer: {
+          id: farmer.id,
+          fullName: farmer.fullName,
+        },
+        products,
+        stats: {
+          totalProducts,
+          activeProducts,
+        },
+      },
+    });
+  } catch (error) {
+    throw new AppError(error.message || "Server error", 500);
+  }
+}
+
+export {
+  addProduct,
+  editProduct,
+  toggleProductStatus,
+  getFarmerDashboard,
 };
-
-export const updateProduceListing = async (req, res) => {
-const { listingId } = req.params;
-const farmerId = req.user.id; // Ensure only the owner can update
-const updates = req.body;
-
-try {
-const [rowsUpdated, [updatedListing]] = await Produce.update(updates, {
-where: { id: listingId, farmerId },
-returning: true, // Return the updated object
-});
-
-if (rowsUpdated === 0) {
-return errorResponse(res, 404, "Listing not found or you do not have permission to update it.");
-}
-
-return successResponse(res, 200, "Product listing updated successfully.", updatedListing);
-} catch (error) {
-console.error('Error updating listing:', error);
-return errorResponse(res, 500, "Failed to update product listing.", error.message);
-}
-};
-
-export const deactivateListing = async (req, res) => {
-const { listingId } = req.params;
-const farmerId = req.user.id;
-
-try {
-const [rowsUpdated] = await Produce.update({ status: 'Deactivated' }, {
-where: { id: listingId, farmerId },
-});
-
-if (rowsUpdated === 0) {
-return errorResponse(res, 404, "Listing not found or not owned by you.");
-}
-
-return successResponse(res, 200, "Product listing deactivated successfully.");
-} catch (error) {
-console.error('Error deactivating listing:', error);
-return errorResponse(res, 500, "Failed to deactivate listing.", error.message);
-}
-};
-
-export const getFarmerDashboard = async (req, res) => {
-const farmerId = req.user.id;
-
-try {
-// 1. Fetch Farmer Profile Data
-const farmer = await Farmer.findByPk(farmerId, {
-attributes: ['fullName', 'verificationStatus', 'profilePhoto'],
-});
-
-if (!farmer) {
-return errorResponse(res, 404, "Farmer profile not found.");
-}
-
-// 2. Fetch All Listings (Product Cards/Table)
-const listings = await Produce.findAll({
-where: { farmerId },
-attributes: ['id', 'productName', 'quantity', 'pricePerUnit', 'status', 'imageUrls'],
-order: [['createdAt', 'DESC']],
-});
-
-// 3. Fetch Basic Insights (Placeholder for complex calculation)
-const insights = await getFarmerInsightsInternal(farmerId);
-return successResponse(res, 200, "Farmer dashboard data retrieved.", {
-farmerProfile: farmer,
-listings: listings,
-insights: insights,
-});
-
-} catch (error) {
-console.error('Error fetching farmer dashboard:', error);
-return errorResponse(res, 500, "Failed to load dashboard data.", error.message);
-}
-};
-const getFarmerInsightsInternal = async (farmerId) => {
-const productViews = Math.floor(Math.random() * 500) + 100;
-const popularItem = 'Tomatoes';
-const averageMarketPrice = (Math.random() * 500 + 1500).toFixed(2); 
-
-return {
-productViews,
-popularItems: popularItem,
-averageMarketPrices: `₦${averageMarketPrice}/kg`,
-};
-};
-
-// Export all controller functions
-export default {
-addProduceListing,
-updateProduceListing,
-deactivateListing,
-getFarmerDashboard,
-}

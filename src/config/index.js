@@ -1,0 +1,28 @@
+import dotenv from "dotenv";
+dotenv.config();
+
+export default {
+  ENVIRONMENT: process.env.NODE_ENV || "dev",
+  PORT: Number(process.env.PORT || 3000),
+  DATABASE_NAME: process.env.DB_NAME || "db_name",
+  DATABASE_USERNAME: process.env.DB_USER || "root",
+  DATABASE_PASSWORD: process.env.DB_PASSWORD || "password",
+  DATABASE_HOST: process.env.DB_HOST || "localhost",
+  DATABASE_PORT: Number(process.env.DB_PORT || 3306),
+  DATABASE_DIALECT: process.env.DB_DIALECT || "mysql",
+  SMTP_HOST: process.env.SMTP_HOST || "smtp.example.com",
+  SMTP_PORT: Number(process.env.SMTP_PORT || 587),
+  SMTP_USER: process.env.SMTP_USER || "dev",
+  SMTP_PASSWORD: process.env.SMTP_PASSWORD || "devpass",
+  SMTP_SECURE: process.env.SMTP_SECURE === "true" || false,
+  TYPICODE_API_URL:
+    process.env.TYPICODE_API_URL || "https://jsonplaceholder.typicode.com",
+  TYPICODE_BASE_API_KEY: process.env.TYPICODE_BASE_API_KEY || "",
+  REDIS_TTL: Number(process.env.REDIS_TTL || 300),
+  REDIS_URL: process.env.REDIS_URL || "redis://localhost:6379",
+  JWT_SECRET: process.env.JWT_SECRET || "your_jwt_secret_key",
+  JWT_EXPIRES_IN: Number(process.env.JWT_EXPIRES_IN || 7200),
+};
+
+// const connect_uri = `mongodb://${DATABASE_USERNAME}:${DATABASE_PASSWORD}@${DATABASE_HOST}:${DATABASE_PORT}/${DATABASE_NAME}`
+// await mongoose.connect(connect_uri);

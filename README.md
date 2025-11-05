@@ -1,33 +1,62 @@
-# FARMLINK
+# FARMLINK BACKEND
 
-## Project details
+## Project Overview
 
-This is a platform that connects buyers as well as end users/buyers together such that the buyer has a direct access to different farm locations where the produce is available. The major focus being availability of such produce.
+**Farmlink** is a comprehensive platform that directly connects farmers with buyers, eliminating intermediaries and ensuring fresh produce accessibility. The platform provides farmers with a digital marketplace to showcase their products while giving buyers direct access to farm locations and contact information.
 
-## Features
+## Key Features
 
-- A directory where farmers can register and have their products listed
-- Buyers can peruse what is available and sign up to have access to a farmer's location/contact
--
+### Farmers
+
+- **Product Management**: Add, edit, and manage produce listings
+- **Dashboard**: View sales analytics and product performance
+- **Status Control**: Toggle product availability (Active/Inactive)
+- **Verification System**: Secure farmer verification process
+
+### Buyers/Customers
+
+- **Marketplace Browse**: Search and filter available produce
+- **Farmer Ratings**: Rate farmers based on transaction experience
+- **Direct Contact**: Access verified farmer information
+- **Product Details**: Comprehensive produce information and pricing
+
+### Administrators
+
+- **User Management**: Manage farmer and customer accounts
+- **Verification Control**: Approve/reject farmer verification requests
+- **Content Moderation**: Remove inappropriate listings
+- **Analytics Dashboard**: Platform usage and performance metrics
 
 ## Tech Stack
 
-- Backend - Node.js/Express (ESM)
-- Frontend -
-- Database - Sequelize/MySQL
--
+- **Backend Framework**: Node.js with Express (ES Modules)
+- **Database**: MySQL with Sequelize ORM
+- **Authentication**: JWT-based authentication system
+- **File Upload**: Cloudinary integration
+- **Email Service**: SMTP email notifications
+- **SMS Service**: SMS verification capabilities
+- **Architecture**: RESTful API with MVC pattern
 
-## Dependencies:
+## Core Dependencies
 
-- express - This is the web server framework
-- dotenv - To ensure the security of the credentials
--
--
--
+```json
+{
+  "express": "Web application framework",
+  "sequelize": "Promise-based Node.js ORM",
+  "mysql2": "MySQL database driver",
+  "jsonwebtoken": "JWT implementation",
+  "bcryptjs": "Password hashing",
+  "dotenv": "Environment variable management",
+  "cors": "Cross-Origin Resource Sharing",
+  "helmet": "Security middleware",
+  "cloudinary": "Cloud-based image management"
+}
+```
 
-### Development dependency
+### Development Dependencies
 
-- nodemon - To ensure the continuous running of the server during testing
+- **nodemon**: Auto-restart server during development
+- **jest**: Testing framework (if applicable)
 
 ## Git repository
 
@@ -70,69 +99,206 @@ EMAIL_PORT=
 EMAIL_HOST=
 ```
 
-6.  To start the server once, use the following command:
+6.  Start the server:
 
-`npm start`
+**Production mode:**
 
-Alternatively, to ensure that the server automatically restarts whenever changes are effected to the file, run the following command:
+```bash
+npm start
+```
 
-`npm run dev`
+**Development mode (with auto-restart):**
+
+```bash
+npm run dev
+```
 
 ## API Endpoints
 
-## How it works
+| Method                    | Endpoint                           | Description                       | Authentication | Middleware                                                      |
+| ------------------------- | ---------------------------------- | --------------------------------- | -------------- | --------------------------------------------------------------- |
+| **AUTHENTICATION ROUTES** |                                    |                                   |                |                                                                 |
+| `POST`                    | `/api/auth/register`               | User registration with validation | Public         | `registrationValidator`, `validationMiddleware`                 |
+| `POST`                    | `/api/auth/login`                  | User authentication               | Public         | `loginValidator`, `validationMiddleware`                        |
+| `GET`                     | `/api/auth/profile`                | Get user profile                  | Required       | `authMiddleware`                                                |
+| `POST`                    | `/api/auth/change-password`        | Change user password              | Required       | `authMiddleware`                                                |
+| `POST`                    | `/api/auth/email-otp`              | Request email OTP verification    | Public         | None                                                            |
+| `POST`                    | `/api/auth/verify-email-otp`       | Verify email OTP                  | Public         | None                                                            |
+| **FARMER ROUTES**         |                                    |                                   |                |                                                                 |
+| `POST`                    | `/api/farmers/products`            | Add new product                   | Farmer Auth    | `authMiddleware`                                                |
+| `PUT`                     | `/api/farmers/products/:id`        | Update existing product           | Farmer Auth    | `authMiddleware`                                                |
+| `PATCH`                   | `/api/farmers/products/:id/status` | Toggle product status             | Farmer Auth    | `authMiddleware`                                                |
+| `GET`                     | `/api/farmers/dashboard`           | Get farmer dashboard data         | Farmer Auth    | `authMiddleware`                                                |
+| **CUSTOMER ROUTES**       |                                    |                                   |                |                                                                 |
+| `GET`                     | `/api/customers/`                  | Get all customers                 | Admin Auth     | `authMiddleware`                                                |
+| `GET`                     | `/api/customers/:id`               | Get customer by ID                | Admin Auth     | `authMiddleware`                                                |
+| `PUT`                     | `/api/customers/:id`               | Update customer information       | Admin Auth     | `authMiddleware`                                                |
+| `DELETE`                  | `/api/customers/:id`               | Delete customer account           | Admin Auth     | `authMiddleware`                                                |
+| **ADMIN ROUTES**          |                                    |                                   |                |                                                                 |
+| `GET`                     | `/api/admin/pending-verifications` | Get pending farmer verifications  | Admin Auth     | `authMiddleware`                                                |
+| `PATCH`                   | `/api/admin/verification-status`   | Update verification status        | Admin Auth     | `authMiddleware`                                                |
+| `DELETE`                  | `/api/admin/users/:userId`         | Remove user account               | Admin Auth     | `authMiddleware`                                                |
+| `DELETE`                  | `/api/admin/listings/:listingId`   | Remove product listing            | Admin Auth     | `authMiddleware`                                                |
+| `GET`                     | `/api/admin/summary`               | Get admin dashboard summary       | Admin Auth     | `authMiddleware`                                                |
+| **PRODUCE ROUTES**        |                                    |                                   |                |                                                                 |
+| `GET`                     | `/api/produce/`                    | Get all active produce listings   | Public         | None                                                            |
+| `GET`                     | `/api/produce/:listingId`          | Get specific produce details      | Public         | None                                                            |
+| `POST`                    | `/api/produce/rate`                | Rate a farmer                     | Customer Auth  | `rateFarmerValidator`, `validationMiddleware`, `authMiddleware` |
 
-## Folder Structure
+### Authentication Legend:
+
+- ** Public**: No authentication required
+- ** Required**: JWT token required in Authorization header
+- ** Farmer Auth**: Must be authenticated farmer
+- ** Admin Auth**: Must be authenticated admin
+- ** Customer Auth**: Must be authenticated customer
+
+### Request Headers:
+
+```bash
+# For authenticated endpoints
+Authorization: Bearer <your_jwt_token>
+Content-Type: application/json
+```
+
+### Response Format:
+
+All endpoints return standardized JSON responses:
+
+```json
+{
+  "success": true,
+  "message": "Operation completed successfully",
+  "data": {
+    // Response data here
+  }
+}
+```
+
+## How It Works
+
+### User Registration & Authentication
+
+1. Users register with role selection (farmer/customer)
+2. JWT tokens issued for authenticated sessions
+3. Role-based middleware controls endpoint access
+4. Password hashing ensures secure credential storage
+
+### Farmer Workflow
+
+1. Farmers register and await verification approval
+2. Once verified, farmers can add/manage products
+3. Product listings appear in public marketplace
+4. Farmers monitor performance via dashboard
+
+### Buyer Experience
+
+1. Browse marketplace without authentication
+2. Register/login to rate farmers and access contact info
+3. Filter products by category, price, location
+4. Rate farmers post-transaction
+
+### Admin Management
+
+1. Review and approve farmer verification requests
+2. Monitor platform activity and user behavior
+3. Remove inappropriate content or problematic users
+4. Access comprehensive analytics dashboard
+
+## Project Structure
 
 ```
-farmlink-backend/
+Farmlink_Backend/
 │
 ├── src/
-│   ├── config/
-│   │   ├── cloudinary.js
-│   │   └── db_files.js
+│   ├── config/                    # Configuration files
+│   │   ├── cloudinary.js         # Cloudinary setup
+│   │   ├── db_files.js           # Database configuration
+│   │   └── index.js              # Main config exports
 │   │
-│   ├── controllers/
-│   │   ├── adminController.js
-│   │   ├── authController.js
-│   │   ├── customerController.js
-│   │   ├── farmerController.js
-│   │   ├── produceController.js
-│   │   └──
+│   ├── controllers/              # Business logic handlers
+│   │   ├── adminController.js    # Admin management functions
+│   │   ├── authController.js     # Authentication logic
+│   │   ├── customerController.js # Customer CRUD operations
+│   │   ├── farmerController.js   # Farmer & product management
+│   │   └── produceController.js  # Marketplace & rating logic
 │   │
-│   ├── middleware/
-│   │   ├── authMiddleware.js
-│   │   └── roleMiddleware.js
+│   ├── middlewares/              # Express middleware
+│   │   ├── authMiddleware.js     # JWT authentication
+│   │   ├── errorHandler.js       # Global error handling
+│   │   ├── roleMiddleware.js     # Role-based access control
+│   │   └── validationMiddleware.js # Request validation
 │   │
-│   ├── models/
-│   │   ├── admin.js
-│   │   ├── customer.js
-│   │   ├── farmer.js
-│   │   ├── produce.js
-│   │   └── verification.js
+│   ├── models/                   # Sequelize database models
+│   │   ├── admin.js             # Admin user model
+│   │   ├── customer.js          # Customer user model
+│   │   ├── farmer.js            # Farmer user model
+│   │   ├── produce.js           # Product listing model
+│   │   ├── verification.js      # Verification request model
+│   │   └── index.js             # Model associations & exports
 │   │
-│   ├── routes/
-│   │   ├── adminRoutes.js
-│   │   ├── authRoutes.js
-│   │   ├── customerRoutes.js
-│   │   ├── farmerRoutes.js
-│   │   ├── produceRoutes.js
-│   │   └── verificationRoutes.js
+│   ├── routes/                   # API route definitions
+│   │   ├── adminRoutes.js       # Admin endpoint routes
+│   │   ├── authRoutes.js        # Authentication routes
+│   │   ├── customerRoutes.js    # Customer management routes
+│   │   ├── farmerRoutes.js      # Farmer operation routes
+│   │   └── produceRoutes.js     # Marketplace routes
 │   │
-│   ├── utils/
-│   │   ├── emailService.js
-│   │   ├── generateToken.js
-│   │   ├── smsService.js
-│   │   └── validators.js
+│   ├── services/                 # Business service layer
+│   │   └── userService.js       # User management services
 │   │
-│   ├── app.js
-│   └── server.js
+│   ├── utils/                    # Utility functions
+│   │   ├── AppError.js          # Custom error class
+│   │   ├── auth.js              # Authentication helpers
+│   │   ├── emailService.js      # Email notification service
+│   │   ├── fileUploads.js       # File upload utilities
+│   │   ├── generateToken.js     # JWT token generation
+│   │   ├── responseHandler.js   # Standardized API responses
+│   │   ├── smsService.js        # SMS notification service
+│   │   └── Validators.js        # Input validation rules
+│   │
+│   ├── app.js                    # Express app configuration
+│   └── server.js                 # Server startup & port binding
 │
-├── .env
-├── package.json
-└── README.md
+├── .env                          # Environment variables
+├── .gitignore                    # Git ignore rules
+├── package.json                  # Project dependencies & scripts
+└── README.md                     # Project documentation
 ```
 
-## Author
+## Architecture Highlights
 
-Techcrush Capstone Project Group 2
+- **MVC Pattern**: Clear separation of concerns with Models, Views (JSON), Controllers
+- **ES Modules**: Modern JavaScript import/export syntax throughout
+- **Middleware Pipeline**: Authentication, validation, error handling
+- **Service Layer**: Business logic abstraction from controllers
+- **Centralized Error Handling**: Consistent error responses across all endpoints
+- **Role-Based Access**: Granular permissions for farmers, customers, and admins
+
+## Contributing
+
+This is a capstone project for educational purposes. For team members working on improvements:
+
+1. Create feature branch (`git checkout -b feature/NewFeature`)
+2. Make your changes following the established patterns
+3. Test your changes locally
+4. Commit with descriptive messages (`git commit -m 'Add: New feature description'`)
+5. Push to your branch and create a pull request
+
+## License
+
+This project is part of the Techcrush Capstone Program.
+
+## Group 2 Backend Team
+
+1.  Nwazota Chibuike Anthony
+2.  Adeyoola Adebayo
+3.  Adegoke Christopher Ayomide
+4.  Olatunji Bisola
+5.  Charles Robinson
+6.  Chukwumaobi Chizaram Divine
+7.  Onuzulike Chijioke Marie Claire
+
+## Acknowledgement
+
+Special appreciation to **Mr. Oluwatobi Adelabu**, our instructor, for his exceptional guidance and mentorship. His teaching methodology has been instrumental in helping our team understand complex backend development concepts. We are grateful for his patience, technical expertise, and commitment to ensuring every student grasps the fundamentals of modern web development. His dedication to student success has made this learning experience both challenging and rewarding.

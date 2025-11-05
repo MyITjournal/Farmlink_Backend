@@ -1,87 +1,93 @@
 import Customer from "../models/customer.js";
-import responseHandler from "../utils/responseHandler.js";
+import AppError from "../utils/AppError.js";
 
-const { successResponse, errorResponse } = responseHandler;
-
-export const getCustomers = async (req, res) => {
+async function getCustomers(req, res) {
 	try {
 		const customers = await Customer.findAll({
 			attributes: { exclude: ["password"] },
 			order: [["createdAt", "DESC"]],
 		});
 
-		return successResponse(res, "Customers retrieved", customers);
+		res.status(200).json({
+			success: true,
+			message: "Customers retrieved successfully",
+			data: customers,
+		});
 	} catch (error) {
-		console.error("Error fetching customers:", error);
-		return errorResponse(res, "Unable to fetch customers", 500, error.message);
+		throw new AppError(error.message || "Unable to fetch customers", 500);
 	}
-};
+}
 
-export const getCustomerById = async (req, res) => {
+async function getCustomerById(req, res) {
 	try {
-		const { id } = req.params;
+		const id = req.params.id;
 		const customer = await Customer.findByPk(id, {
 			attributes: { exclude: ["password"] },
 		});
 
 		if (!customer) {
-			return errorResponse(res, "Customer not found", 404);
+			throw new AppError("Customer not found", 404);
 		}
 
-		return successResponse(res, "Customer retrieved", customer);
+		res.status(200).json({
+			success: true,
+			message: "Customer retrieved successfully",
+			data: customer,
+		});
 	} catch (error) {
-		console.error("Error fetching customer:", error);
-		return errorResponse(res, "Unable to fetch customer", 500, error.message);
+		throw new AppError(error.message || "Unable to fetch customer", 500);
 	}
-};
+}
 
-export const updateCustomer = async (req, res) => {
+async function updateCustomer(req, res) {
 	try {
-		const { id } = req.params;
-		const updateFields = { ...req.body };
+		const id = req.params.id;
+		const updateFields = req.body;
 		delete updateFields.password;
 
-		const [rowsUpdated, [updatedCustomer]] = await Customer.update(
-			updateFields,
-			{
-				where: { id },
-				returning: true,
-				individualHooks: true,
-			}
-		);
+		const result = await Customer.update(updateFields, {
+			where: { id },
+			returning: true,
+			individualHooks: true,
+		});
+
+		const rowsUpdated = result[0];
+		const updatedCustomer = result[1][0];
 
 		if (rowsUpdated === 0) {
-			return errorResponse(res, "Customer not found", 404);
+			throw new AppError("Customer not found", 404);
 		}
 
-		const { password, ...publicCustomer } = updatedCustomer.get({ plain: true });
+		const customerData = updatedCustomer.get({ plain: true });
+		delete customerData.password;
 
-		return successResponse(res, "Customer updated", publicCustomer);
+		res.status(200).json({
+			success: true,
+			message: "Customer updated successfully",
+			data: customerData,
+		});
 	} catch (error) {
-		console.error("Error updating customer:", error);
-		return errorResponse(res, "Unable to update customer", 500, error.message);
+		throw new AppError(error.message || "Unable to update customer", 500);
 	}
-};
+}
 
-export const deleteCustomer = async (req, res) => {
+async function deleteCustomer(req, res) {
 	try {
-		const { id } = req.params;
+		const id = req.params.id;
 		const deleted = await Customer.destroy({ where: { id } });
 
 		if (!deleted) {
-			return errorResponse(res, "Customer not found", 404);
+			throw new AppError("Customer not found", 404);
 		}
 
-		return successResponse(res, "Customer deleted", { id });
+		res.status(200).json({
+			success: true,
+			message: "Customer deleted successfully",
+			data: { id },
+		});
 	} catch (error) {
-		console.error("Error deleting customer:", error);
-		return errorResponse(res, "Unable to delete customer", 500, error.message);
+		throw new AppError(error.message || "Unable to delete customer", 500);
 	}
-};
+}
 
-export default {
-	getCustomers,
-	getCustomerById,
-	updateCustomer,
-	deleteCustomer,
-};
+export { getCustomers, getCustomerById, updateCustomer, deleteCustomer };

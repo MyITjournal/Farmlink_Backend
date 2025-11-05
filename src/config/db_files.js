@@ -1,5 +1,6 @@
 import { Sequelize } from "sequelize";
 import dotenv from "dotenv";
+import process from "node:process";
 
 dotenv.config();
 
@@ -15,15 +16,14 @@ const sequelize = new Sequelize(
 );
 
 // Test the connection
-const connectDB = async () => {
+export const connectDB = async () => {
   try {
     await sequelize.authenticate();
     console.log("Connected to MySQL Database via Sequelize");
   } catch (error) {
     console.error("Failed to connect to DB:", error.message);
+    process.exit(1);
   }
 };
-
-await connectDB();
 
 export default sequelize;

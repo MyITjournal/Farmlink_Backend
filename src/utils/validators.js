@@ -1,12 +1,4 @@
-import { body, validationResult } from "express-validator";
-
-const handleValidation = (req, res, next) => {
-	const errors = validationResult(req);
-	if (!errors.isEmpty()) {
-		return res.status(400).json({ errors: errors.array() });
-	}
-	next();
-};
+import { body } from "express-validator";
 
 export const tokenValidator = [
 	body("id").notEmpty().withMessage("id is required"),
@@ -29,17 +21,21 @@ export const sendSmsValidator = [
 	handleValidation,
 ];
 
-export const authRegisterValidator = [
+export const registrationValidator = [
 	body("email").isEmail().withMessage("Valid email is required"),
 	body("password").isLength({ min: 6 }).withMessage("Password must be at least 6 characters"),
-	body("role").notEmpty().withMessage("role is required"),
-	handleValidation,
+	body("firstName").notEmpty().withMessage("First name is required"),
+	body("lastName").notEmpty().withMessage("Last name is required"),
+	body("username").notEmpty().withMessage("Username is required"),
+	body("phone").notEmpty().withMessage("Phone number is required"),
+	body("role").notEmpty().withMessage("Role is required"),
 ];
 
-export const authLoginValidator = [
-	body("email").isEmail().withMessage("Valid email is required"),
+export const loginValidator = [
+	body("email").optional().isEmail().withMessage("Valid email is required"),
+	body("phone").optional().notEmpty().withMessage("Phone number is required"),
 	body("password").notEmpty().withMessage("Password is required"),
-	handleValidation,
+	body("role").notEmpty().withMessage("Role is required"),
 ];
 
 export const verificationRequestValidator = [
