@@ -1,66 +1,36 @@
 import { DataTypes } from "sequelize";
-import { sequelize } from "../config/db.js";
+import sequelize from "../config/db_files.js";
+import User from "./user.js";
 
 const Farmer = sequelize.define(
   "Farmer",
   {
-    id: {
+    userId: {
       type: DataTypes.UUID,
-      defaultValue: DataTypes.UUIDV4,
+      allowNull: false,
       primaryKey: true,
-    },
-    firstName: {
-      type: DataTypes.STRING(50),
-      allowNull: false,
-    },
-
-    lastName: {
-      type: DataTypes.STRING(50),
-      allowNull: false,
-    },
-    password: {
-      type: DataTypes.STRING,
-      allowNull: false,
+      references: {
+        model: User,
+        key: "user_uuid",
+      },
+      unique: true,
     },
     farmName: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    email: {
-      type: DataTypes.STRING,
-      unique: true,
-      allowNull: false,
-      validate: {
-        isEmail: true,
-      },
-    },
-    phoneNumber: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    address: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-    state: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-    profileImage: {
       type: DataTypes.STRING,
       allowNull: true,
     },
     farmType: {
       type: DataTypes.ENUM("Crop", "Livestock", "Mixed"),
-      allowNull: false,
+      allowNull: true,
+      defaultValue: "Mixed",
     },
     bio: {
       type: DataTypes.TEXT,
       allowNull: true,
     },
-    verified: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false,
+    verificationStatus: {
+      type: DataTypes.ENUM("Pending", "Verified", "Rejected"),
+      defaultValue: "Pending",
     },
   },
   {

@@ -1,86 +1,28 @@
 import { DataTypes } from "sequelize";
-import { sequelize } from "../config/db.js";
+import sequelize from "../config/db_files.js";
+import User from "./user.js";
+import Farmer from "./farmer.js";
 
 const Customer = sequelize.define(
   "Customer",
   {
-    id: {
+    userId: {
       type: DataTypes.UUID,
-      defaultValue: DataTypes.UUIDV4,
+      allowNull: false,
+      references: {
+        model: User,
+        key: "user_uuid",
+      },
+      unique: true,
       primaryKey: true,
     },
-
-    firstName: {
-      type: DataTypes.STRING(50),
-      allowNull: false,
-    },
-
-    lastName: {
-      type: DataTypes.STRING(50),
-      allowNull: false,
-    },
-    fullName: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-
-    email: {
-      type: DataTypes.STRING(100),
-      allowNull: false,
-      unique: true,
-      validate: {
-        isEmail: true,
+    farmerId: {
+      type: DataTypes.UUID,
+      allowNull: true,
+      references: {
+        model: Farmer,
+        key: "userId",
       },
-    },
-
-    phone: {
-      type: DataTypes.STRING(20),
-      allowNull: false,
-      unique: true,
-    },
-
-    address: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-
-    city: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-
-    state: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-
-    country: {
-      type: DataTypes.STRING,
-      allowNull: true,
-      defaultValue: "Nigeria",
-    },
-
-    password: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-
-    role: {
-      type: DataTypes.ENUM("customer", "admin"),
-      defaultValue: "customer",
-    },
-    nin: {
-      type: DataTypes.STRING,
-    },
-
-    accountStatus: {
-      type: DataTypes.ENUM("active", "suspended", "deleted"),
-      defaultValue: "active",
-    },
-
-    profileImage: {
-      type: DataTypes.STRING,
-      allowNull: true,
     },
   },
   {

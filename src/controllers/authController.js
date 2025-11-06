@@ -1,143 +1,123 @@
-import generateToken from "../utils/generateToken.js";
-import emailService from "../utils/emailService.js";
-import smsService from "../utils/smsService.js";
-import bcrypt from "bcryptjs";
-import crypto from "crypto";
+import AppError from "../utils/AppError.js";
+import {
+  createUser,
+  logUserIntoApp,
+  getUserProfile,
+} from "../services/userService.js";
 
-const mockUsers = new Map();
-const issueToken = (req, res) => {
-  const { id, role, email } = req.body || {};
-  if (!id || !role || !email) {
-    return res.status(400).json({
-      success: false,
-      message: "id, role and email are required in body",
-    });
-  }
-
+async function registerUser(req, res) {
   try {
-    const token = generateToken({ id, role, email });
-    return res.json({ success: true, token });
-  } catch (err) {
-    return res.status(500).json({
-      success: false,
-      message: err.message || "Token generation failed",
+    const {
+      firstName,
+      lastName,
+      email,
+      password,
+      phone,
+      address,
+      city,
+      state,
+      country,
+      nin,
+      role = "customer",
+    } = req.body;
+    await createUser({
+      email,
+      password,
+      firstName,
+      lastName,
+      phone,
+      address,
+      city,
+      state,
+      country,
+      nin,
+      role,
     });
+    res.status(201).json({ success: true, message: "User registered" });
+  } catch (error) {
+    throw new AppError(error.message || "Registration failed", 400);
   }
-};
+}
 
-const sendVerificationEmail = async (req, res) => {
-  const { to, subject, text, html } = req.body || {};
-  if (!to || (!text && !html)) {
-    return res
-      .status(400)
-      .json({ success: false, message: "to and text/html required" });
-  }
-
+async function loginUser(req, res) {
   try {
-    const info = await emailService.sendEmail({
-      to,
-      subject: subject || "Verification",
-      text,
-      html,
-    });
-    return res.json({ success: true, info });
-  } catch (err) {
-    return res
-      .status(500)
-      .json({ success: false, message: err.message || "Email sending failed" });
+    console.log("Login request body:", req.body);
+    const { email, phone, password, role } = req.body;
+    const user = await logUserIntoApp({ email, phone, password, role });
+    res.status(200).json({ success: true, data: user });
+  } catch (error) {
+    throw new AppError(error.message || "Invalid Email or Password", 401);
   }
-};
+}
 
-/**
- * Send SMS (development placeholder). Body: { to, message }
- */
-const sendTestSms = async (req, res) => {
-  const { to, message } = req.body || {};
-  if (!to || !message)
-    return res
-      .status(400)
-      .json({ success: false, message: "to and message required" });
-
+async function userProfile(req, res) {
   try {
-    const result = await smsService.sendSms({ to, message });
-    return res.json({ success: true, result });
-  } catch (err) {
-    return res
-      .status(500)
-      .json({ success: false, message: err.message || "SMS sending failed" });
+    const userId = req.user.id;
+    const userRole = req.user.role;
+    const profile = await getUserProfile(userId, userRole);
+    res.status(200).json({ success: true, data: profile });
+  } catch (error) {
+    throw new AppError(error.message || "Invalid User", 401);
   }
-};
+}
 
-/**
- * Mocked register endpoint (no DB).
- * Body: { email, password, role, ...profile }
- */
-const register = async (req, res) => {
-  const { email, password, role, ...profile } = req.body || {};
-  if (!email || !password || !role)
-    return res.status(400).json({
-      success: false,
-      message: "email, password and role are required",
+async function changePassword(req, res) {
+  try {
+    const userId = req.user.id;
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      throw new AppError("Current password and new password are required", 400);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Password changed successfully",
     });
+  } catch (error) {
+    throw new AppError(error.message || "Password change failed", 400);
+  }
+}
 
-  if (mockUsers.has(email))
-    return res
-      .status(409)
-      .json({ success: false, message: "User already exists (mock store)" });
+async function getEmailOTP(req, res) {
+  try {
+    const { email } = req.body;
 
-  const hashed = await bcrypt.hash(password, 10);
-  const id = crypto.randomUUID();
-  const user = { id, email, password: hashed, role, ...profile };
-  mockUsers.set(email, user);
+    if (!email) {
+      throw new AppError("Email is required", 400);
+    }
 
-  const token = generateToken({
-    id: user.id,
-    role: user.role,
-    email: user.email,
-  });
+    res.status(200).json({
+      success: true,
+      message: "OTP sent to email successfully",
+    });
+  } catch (error) {
+    throw new AppError(error.message || "Failed to send OTP", 500);
+  }
+}
 
-  return res.status(201).json({
-    success: true,
-    message: "User registered (mock)",
-    user: { id: user.id, email: user.email, role: user.role, ...profile },
-    token,
-  });
+async function verifyEmailOTP(req, res) {
+  try {
+    const { email, otp } = req.body;
+
+    if (!email || !otp) {
+      throw new AppError("Email and OTP are required", 400);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Email verified successfully",
+    });
+  } catch (error) {
+    throw new AppError(error.message || "OTP verification failed", 400);
+  }
+}
+
+export {
+  registerUser,
+  loginUser,
+  changePassword,
+  getEmailOTP,
+  verifyEmailOTP,
+  userProfile,
 };
-
-/**
- * Mocked login endpoint (no DB).
- * Body: { email, password }
- */
-const login = async (req, res) => {
-  const { email, password } = req.body || {};
-  if (!email || !password)
-    return res
-      .status(400)
-      .json({ success: false, message: "email and password required" });
-
-  const user = mockUsers.get(email);
-  if (!user)
-    return res
-      .status(401)
-      .json({ success: false, message: "Invalid credentials (mock)" });
-
-  const match = await bcrypt.compare(password, user.password);
-  if (!match)
-    return res
-      .status(401)
-      .json({ success: false, message: "Invalid credentials (mock)" });
-
-  const token = generateToken({
-    id: user.id,
-    role: user.role,
-    email: user.email,
-  });
-  return res.json({
-    success: true,
-    message: "Logged in (mock)",
-    user: { id: user.id, email: user.email, role: user.role },
-    token,
-  });
-};
-
-export { issueToken, sendVerificationEmail, sendTestSms, register, login };

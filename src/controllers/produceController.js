@@ -1,11 +1,11 @@
-// produce.controller.js
-import Produce from "../models/produce.js";
-import Farmer from "../models/farmer.js";
-import { successResponse, errorResponse } from "../utils/responseHandler.js";
+import models from "../models/index.js";
 import { Op } from "sequelize";
+import AppError from "../utils/AppError.js";
 
-export const getAllProduceListings = async (req, res) => {
-  const { search, category, location, minPrice, maxPrice } = req.query;
+const { Produce, Farmer } = models;
+
+async function getAllProduceListings(req, res) {
+  const { category, minPrice, maxPrice } = req.query;
   const whereClause = {
     status: "Active",
   };
@@ -36,24 +36,17 @@ export const getAllProduceListings = async (req, res) => {
       order: [["createdAt", "DESC"]],
     });
 
-    return successResponse(
-      res,
-      200,
-      "Marketplace listings retrieved successfully.",
-      listings
-    );
+    res.status(200).json({
+      success: true,
+      message: "Marketplace listings retrieved successfully",
+      data: listings,
+    });
   } catch (error) {
-    console.error("Error fetching marketplace listings:", error);
-    return errorResponse(
-      res,
-      500,
-      "Failed to retrieve marketplace listings.",
-      error.message
-    );
+    throw new AppError(error.message || "Failed to retrieve marketplace listings", 500);
   }
-};
+}
 
-export const getProduceDetails = async (req, res) => {
+async function getProduceDetails(req, res) {
   const { listingId } = req.params;
 
   try {
@@ -75,64 +68,49 @@ export const getProduceDetails = async (req, res) => {
     });
 
     if (!listing) {
-      return errorResponse(
-        res,
-        404,
-        "Product listing not found or is currently unavailable."
-      );
+      throw new AppError("Product listing not found or is currently unavailable", 404);
     }
 
-    return successResponse(
-      res,
-      200,
-      "Product details retrieved successfully.",
-      listing
-    );
+    res.status(200).json({
+      success: true,
+      message: "Product details retrieved successfully",
+      data: listing,
+    });
   } catch (error) {
-    console.error("Error fetching product details:", error);
-    return errorResponse(
-      res,
-      500,
-      "Failed to retrieve product details.",
-      error.message
-    );
+    throw new AppError(error.message || "Failed to retrieve product details", 500);
   }
-};
+}
 
 // Allows a buyer to rate a farmer after a transaction (implied post-purchase feature).
-export const rateFarmer = async (req, res) => {
+async function rateFarmer(req, res) {
   const { farmerId, rating } = req.body;
   const buyerId = req.user.id; // Buyer must be logged in
 
   try {
     if (rating < 1 || rating > 5) {
-      return errorResponse(res, 400, "Rating must be between 1 and 5.");
+      throw new AppError("Rating must be between 1 and 5", 400);
     }
 
     const farmer = await Farmer.findByPk(farmerId);
 
     if (!farmer) {
-      return errorResponse(res, 404, "Farmer not found.");
+      throw new AppError("Farmer not found", 404);
     }
     const newRating = (parseFloat(farmer.rating) + rating) / 2;
 
     await farmer.update({ rating: newRating.toFixed(2) });
 
-    return successResponse(
-      res,
-      200,
-      `Farmer rated successfully. New rating: ${newRating.toFixed(2)}`,
-      { newRating: newRating.toFixed(2) }
-    );
+    res.status(200).json({
+      success: true,
+      message: `Farmer rated successfully. New rating: ${newRating.toFixed(2)}`,
+      data: { newRating: newRating.toFixed(2) },
+    });
   } catch (error) {
-    console.error("Error rating farmer:", error);
-    return errorResponse(res, 500, "Failed to submit rating.", error.message);
+    throw new AppError(error.message || "Failed to submit rating", 500);
   }
-};
-c;
+}
 
-// Export all controller functions
-export default {
+export {
   getAllProduceListings,
   getProduceDetails,
   rateFarmer,

@@ -1,20 +1,23 @@
 import express from "express";
 import {
-  issueToken,
-  sendVerificationEmail,
-  sendTestSms,
-  register,
-  login,
+  loginUser,
+  registerUser,
+  userProfile,
+  changePassword,
+  getEmailOTP,
+  verifyEmailOTP,
 } from "../controllers/authController.js";
+import { registrationValidator, loginValidator } from "../utils/validators.js";
+import validationMiddleware from "../middlewares/validationMiddleware.js";
+import { protect } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
-if (process.env.NODE_ENV === "development") {
-  router.post("/token", issueToken);
-  router.post("/send-email", sendVerificationEmail);
-  router.post("/send-sms", sendTestSms);
-  router.post("/register", register);
-  router.post("/login", login);
-}
+router.post("/register", registrationValidator, registerUser);
+router.post("/login", loginValidator, validationMiddleware, loginUser);
+router.get("/profile", protect, userProfile);
+router.post("/change-password", protect, changePassword);
+router.post("/email-otp", getEmailOTP);
+router.post("/verify-email-otp", verifyEmailOTP);
 
 export default router;

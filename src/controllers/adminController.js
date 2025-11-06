@@ -1,108 +1,144 @@
-// admin.controller.js
-import Farmer from '../models/farmer.js';
-import Produce from '../models/produce.js';
-import { successResponse, errorResponse } from '../utils/responseHandler.js';
+import models from "../models/index.js";
+import AppError from "../utils/AppError.js";
 
-export const getPendingVerifications = async (req, res) => {
-try {
-const pendingUsers = await Farmer.findAll({
-where: { verificationStatus: 'Pending' },
-attributes: ['id', 'fullName', 'nin', 'phone', 'role', 'createdAt', 'location'],
-order: [['createdAt', 'ASC']],
-});
+const { Farmer, Produce } = models;
 
-return successResponse(res, 200, "Pending users retrieved.", pendingUsers);
-} catch (error) {
-console.error('Error fetching pending users:', error);
-return errorResponse(res, 500, "Failed to retrieve pending verifications.");
-}
-};
+async function getPendingVerifications(req, res) {
+  try {
+    const pendingUsers = await Farmer.findAll({
+      where: { verificationStatus: "Pending" },
+      attributes: [
+        "id",
+        "fullName",
+        "nin",
+        "phone",
+        "role",
+        "createdAt",
+        "location",
+      ],
+      order: [["createdAt", "ASC"]],
+    });
 
-export const updateVerificationStatus = async (req, res) => {
-const { userId, status } = req.body; // status must be 'Verified' or 'Rejected'
-
-if (!['Verified', 'Rejected'].includes(status)) {
-return errorResponse(res, 400, "Invalid status provided. Must be 'Verified' or 'Rejected'.");
-}
-
-try {
-const [rowsUpdated] = await Farmer.update(
-{ verificationStatus: status },
-{ where: { id: userId, verificationStatus: 'Pending' } }
-);
-
-if (rowsUpdated === 0) {
-return errorResponse(res, 404, "User not found or status is not 'Pending'.");
+    res.status(200).json({
+      success: true,
+      message: "Pending users retrieved successfully",
+      data: pendingUsers,
+    });
+  } catch (error) {
+    throw new AppError(
+      error.message || "Failed to retrieve pending verifications",
+      500
+    );
+  }
 }
 
-return successResponse(res, 200, `User ID ${userId} status updated to ${status}.`);
-} catch (error) {
-console.error('Error updating verification status:', error);
-return errorResponse(res, 500, "Failed to update user verification status.");
-}
-};
+async function updateVerificationStatus(req, res) {
+  try {
+    const userId = req.body.userId;
+    const status = req.body.status;
 
-export const blockUser = async (req, res) => {
-const { userId } = req.params;
+    if (status !== "Verified" && status !== "Rejected") {
+      throw new AppError(
+        "Invalid status provided. Must be 'Verified' or 'Rejected'",
+        400
+      );
+    }
 
-try {
-// Find the user to check existence before deletion
-const user = await Farmer.findByPk(userId);
-if (!user) {
-return errorResponse(res, 404, "User not found.");
-}
+    const result = await Farmer.update(
+      { verificationStatus: status },
+      { where: { id: userId, verificationStatus: "Pending" } }
+    );
 
-// Delete user and all associated listings (Cascading delete assumed in database config)
-await Farmer.destroy({ where: { id: userId } });
-console.log(`AUDIT: Admin deleted user ID ${userId} (${user.fullName}).`);
+    const rowsUpdated = result[0];
 
-return successResponse(res, 200, `User ID ${userId} and all associated data have been removed.`);
-} catch (error) {
-console.error('Error blocking user:', error);
-return errorResponse(res, 500, "Failed to remove user.");
-}
-};
-export const removeListing = async (req, res) => {
-const { listingId } = req.params;
+    if (rowsUpdated === 0) {
+      throw new AppError("User not found or status is not 'Pending'", 404);
+    }
 
-try {
-const rowsDeleted = await Produce.destroy({ where: { id: listingId } });
-
-if (rowsDeleted === 0) {
-return errorResponse(res, 404, "Listing not found.");
+    res.status(200).json({
+      success: true,
+      message: `User ID ${userId} status updated to ${status}`,
+    });
+  } catch (error) {
+    throw new AppError(
+      error.message || "Failed to update user verification status",
+      500
+    );
+  }
 }
 
-return successResponse(res, 200, `Listing ID ${listingId} has been removed.`);
-} catch (error) {
-console.error('Error removing listing:', error);
-return errorResponse(res, 500, "Failed to remove listing.");
+async function blockUser(req, res) {
+  try {
+    const userId = req.params.userId;
+
+    // Find the user to check existence before deletion
+    const user = await Farmer.findByPk(userId);
+    if (!user) {
+      throw new AppError("User not found", 404);
+    }
+
+    // Delete user and all associated listings (Cascading delete assumed in database config)
+    await Farmer.destroy({ where: { id: userId } });
+    console.log(`AUDIT: Admin deleted user ID ${userId} (${user.fullName}).`);
+
+    res.status(200).json({
+      success: true,
+      message: `User ID ${userId} and all associated data have been removed`,
+    });
+  } catch (error) {
+    throw new AppError(error.message || "Failed to remove user", 500);
+  }
 }
-};
+async function removeListing(req, res) {
+  try {
+    const listingId = req.params.listingId;
 
-export const getAdminSummary = async (req, res) => {
-try {
-const totalFarmers = await Farmer.count({ where: { role: 'Farmer' } });
-const totalBuyers = await Farmer.count({ where: { role: 'Buyer' } });
-const activeListings = await Produce.count({ where: { status: 'Active' } });
-const pendingVerifications = await Farmer.count({ where: { verificationStatus: 'Pending' } });
+    const rowsDeleted = await Produce.destroy({ where: { id: listingId } });
 
-return successResponse(res, 200, "Admin summary retrieved.", {
-totalFarmers,
-totalBuyers,
-activeListings,
-pendingVerifications,
-});
-} catch (error) {
-console.error('Error fetching admin summary:', error);
-return errorResponse(res, 500, "Failed to load admin summary data.");
+    if (rowsDeleted === 0) {
+      throw new AppError("Listing not found", 404);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: `Listing ID ${listingId} has been removed`,
+    });
+  } catch (error) {
+    throw new AppError(error.message || "Failed to remove listing", 500);
+  }
 }
-};
 
-// Export all controller functions
-export default {
-getPendingVerifications,
-updateVerificationStatus,
-blockUser,
-removeListing,
-getAdminSummary,
+async function getAdminSummary(req, res) {
+  try {
+    const totalFarmers = await Farmer.count({ where: { role: "Farmer" } });
+    const totalBuyers = await Farmer.count({ where: { role: "Buyer" } });
+    const activeListings = await Produce.count({ where: { status: "Active" } });
+    const pendingVerifications = await Farmer.count({
+      where: { verificationStatus: "Pending" },
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Admin summary retrieved",
+      data: {
+        totalFarmers: totalFarmers,
+        totalBuyers: totalBuyers,
+        activeListings: activeListings,
+        pendingVerifications: pendingVerifications,
+      },
+    });
+  } catch (error) {
+    throw new AppError(
+      error.message || "Failed to load admin summary data",
+      500
+    );
+  }
+}
+
+export {
+  getPendingVerifications,
+  updateVerificationStatus,
+  blockUser,
+  removeListing,
+  getAdminSummary,
 };
