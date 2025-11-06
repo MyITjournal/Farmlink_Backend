@@ -29,9 +29,9 @@ export const registrationValidator = [
     .withMessage("Password must be at least 6 characters"),
   body("firstName").notEmpty().withMessage("First name is required"),
   body("lastName").notEmpty().withMessage("Last name is required"),
-  body("username").notEmpty().withMessage("Username is required"),
   body("phone").notEmpty().withMessage("Phone number is required"),
   body("role").notEmpty().withMessage("Role is required"),
+  validationMiddleware,
 ];
 
 export const loginValidator = [

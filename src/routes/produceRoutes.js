@@ -4,7 +4,7 @@ import {
   getProduceDetails,
   rateFarmer,
 } from "../controllers/produceController.js";
-import { rateFarmerValidator } from "../utils/Validators.js";
+import { rateFarmerValidator } from "../utils/validators.js";
 import validationMiddleware from "../middlewares/validationMiddleware.js";
 import { protect } from "../middlewares/authMiddleware.js";
 

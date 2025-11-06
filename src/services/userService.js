@@ -1,64 +1,68 @@
-import bcrypt from "bcryptjs";
 import { Op } from "sequelize";
+import User from "../models/user.js";
 import Customer from "../models/customer.js";
 import Farmer from "../models/farmer.js";
-import generateToken from "../utils/generateToken.js";
+import auth from "../utils/auth.js";
 import AppError from "../utils/AppError.js";
 
-export async function createUser({ username, email, password, firstName, lastName, phone, address, city, state, nin, role }) {
+export async function createUser({
+  email,
+  password,
+  firstName,
+  lastName,
+  phone,
+  address,
+  city,
+  state,
+  nin,
+  role,
+}) {
   // Check if user already exists
-  const existingCustomer = await Customer.findOne({
-    where: { [Op.or]: [{ email }, { username }] },
-  });
-  const existingFarmer = await Farmer.findOne({
-    where: { [Op.or]: [{ email }, { username }] },
+  const existingUser = await User.findOne({
+    where: { [Op.or]: [{ email }, { phoneNumber: phone }] },
   });
 
-  if (existingCustomer || existingFarmer) {
-    throw new AppError("Email or username already exists", 400);
+  if (existingUser) {
+    throw new AppError("Email or phone already exists", 400);
   }
 
-  // Hash password
-  const hashedPassword = await bcrypt.hash(password, 12);
-  const fullName = `${firstName} ${lastName}`;
+  const newUser = await User.create({
+    email,
+    password,
+    phoneNumber: phone,
+    firstName,
+    lastName,
+    address,
+    city,
+    state,
+    nin,
+    role,
+  });
 
-  let newUser;
+  // Create role-specific profile
+  let profile;
   if (role === "customer") {
-    newUser = await Customer.create({
-      username,
-      firstName,
-      lastName,
-      email,
-      password: hashedPassword,
-      phone,
-      address,
-      city,
-      state,
-      nin,
-      fullName,
+    profile = await Customer.create({
+      userId: newUser.user_uuid,
     });
   } else if (role === "farmer") {
-    newUser = await Farmer.create({
-      username,
-      firstName,
-      lastName,
-      email,
-      password: hashedPassword,
-      phone,
-      address,
-      city,
-      state,
-      nin,
-      fullName,
+    profile = await Farmer.create({
+      userId: newUser.user_uuid,
+      farmName: `${firstName} ${lastName}'s Farm`, // Auto-generate farm name
       verificationStatus: "Pending",
     });
   } else {
     throw new AppError("Invalid role. Must be 'customer' or 'farmer'", 400);
   }
 
-  // Remove password from response
-  delete newUser.dataValues.password;
-  return newUser;
+  // Return user without password
+  const userResponse = newUser.toJSON();
+  delete userResponse.password;
+
+  return {
+    ...userResponse,
+    profile,
+  };
 }
 
 export async function logUserIntoApp({ email, phone, password, role }) {
@@ -68,78 +72,78 @@ export async function logUserIntoApp({ email, phone, password, role }) {
     throw new AppError("Email/phone, password, and role are required", 400);
   }
 
-  let user;
-  if (role === "customer") {
-    user = await Customer.findOne({
-      where: {
-        [Op.or]: [{ email: emailOrPhone }, { phone: emailOrPhone }],
+  // Find user by email or phone
+  const user = await User.findOne({
+    where: {
+      [Op.and]: [
+        { [Op.or]: [{ email: emailOrPhone }, { phoneNumber: emailOrPhone }] },
+        { role: role },
+      ],
+    },
+    include: [
+      {
+        model: role === "customer" ? Customer : Farmer,
+        as: role,
+        required: false,
       },
-    });
-  } else if (role === "farmer") {
-    user = await Farmer.findOne({
-      where: {
-        [Op.or]: [{ email: emailOrPhone }, { phone: emailOrPhone }],
-      },
-    });
-  } else {
-    throw new AppError("Invalid role. Must be 'customer' or 'farmer'", 400);
-  }
+    ],
+  });
 
   if (!user) {
     throw new AppError("Invalid credentials", 401);
   }
 
-  const isMatch = await bcrypt.compare(password, user.password);
+  const isMatch = await user.verifyPassword(password);
   if (!isMatch) {
     throw new AppError("Invalid credentials", 401);
   }
 
-  const token = generateToken({
-    id: user.id,
-    role: role,
-    email: user.email,
+  const token = await auth.generateToken({
+    user_uuid: user.user_uuid,
+    fullName: user.fullName,
+    role: user.role,
   });
 
-  // Remove password from response
-  delete user.dataValues.password;
-
-  const userResponse = {
-    id: user.id,
-    username: user.username,
-    email: user.email,
-    fullName: user.fullName,
-    role: role,
-  };
-
-  // Add farmer-specific fields if role is farmer
-  if (role === "farmer" && user.verificationStatus) {
-    userResponse.verificationStatus = user.verificationStatus;
-  }
+  const loginResponse = user.toJSON();
+  delete loginResponse.password;
 
   return {
     token,
-    user: userResponse,
+    user: loginResponse,
   };
 }
 
 export async function getUserProfile(userId, userRole) {
-  let user;
-  if (userRole === "customer") {
-    user = await Customer.findByPk(userId, {
-      attributes: { exclude: ["password"] }
-    });
-  } else if (userRole === "farmer") {
-    user = await Farmer.findByPk(userId, {
-      attributes: { exclude: ["password"] }
-    });
-  }
+  const user = await User.findByPk(userId, {
+    attributes: { exclude: ["password"] },
+    include: [
+      {
+        model: userRole === "customer" ? Customer : Farmer,
+        as: userRole,
+        required: false,
+      },
+    ],
+  });
 
   if (!user) {
     throw new AppError("User not found", 404);
   }
 
-  return {
-    ...user.dataValues,
-    role: userRole,
-  };
+  const userData = user.toJSON();
+  const profileData = userData[userRole];
+
+  if (profileData) {
+    delete userData[userRole];
+
+    const {
+      id: profileId,
+      userId: profileUserId,
+      createdAt: profileCreatedAt,
+      updatedAt: profileUpdatedAt,
+      ...relevantProfileData
+    } = profileData;
+    Object.assign(userData, relevantProfileData);
+  }
+
+  return userData;
 }

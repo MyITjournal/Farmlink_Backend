@@ -3,12 +3,12 @@ import sequelize from "../config/db_files.js";
 import Farmer from "./farmer.js";
 
 const Admin = sequelize.define("Admin", {
-  id: {
+  userId: {
     type: DataTypes.UUID,
     primaryKey: true,
     references: {
       model: Farmer,
-      key: "id",
+      key: "userId",
     },
   },
   permissions: {
@@ -26,9 +26,5 @@ const Admin = sequelize.define("Admin", {
     allowNull: true,
   },
 });
-
-// Define a one-to-one relationship
-Admin.belongsTo(Farmer, { foreignKey: "id" });
-Farmer.hasOne(Admin, { foreignKey: "id" });
 
 export default Admin;

@@ -129,6 +129,7 @@ npm run dev
 | `PUT`                     | `/api/farmers/products/:id`        | Update existing product           | Farmer Auth    | `authMiddleware`                                                |
 | `PATCH`                   | `/api/farmers/products/:id/status` | Toggle product status             | Farmer Auth    | `authMiddleware`                                                |
 | `GET`                     | `/api/farmers/dashboard`           | Get farmer dashboard data         | Farmer Auth    | `authMiddleware`                                                |
+| `GET`                     | `/api/farmers/`                    | Get all farmers                   | Farmer Auth    | `authMiddleware`                                                |
 | **CUSTOMER ROUTES**       |                                    |                                   |                |                                                                 |
 | `GET`                     | `/api/customers/`                  | Get all customers                 | Admin Auth     | `authMiddleware`                                                |
 | `GET`                     | `/api/customers/:id`               | Get customer by ID                | Admin Auth     | `authMiddleware`                                                |
@@ -213,7 +214,7 @@ Farmlink_Backend/
 ├── src/
 │   ├── config/                    # Configuration files
 │   │   ├── cloudinary.js         # Cloudinary setup
-│   │   ├── db_files.js           # Database configuration
+│   │   ├── db_files.js           # Database configuration & connection
 │   │   └── index.js              # Main config exports
 │   │
 │   ├── controllers/              # Business logic handlers
@@ -234,6 +235,7 @@ Farmlink_Backend/
 │   │   ├── customer.js          # Customer user model
 │   │   ├── farmer.js            # Farmer user model
 │   │   ├── produce.js           # Product listing model
+│   │   ├── user.js              # Base user model
 │   │   ├── verification.js      # Verification request model
 │   │   └── index.js             # Model associations & exports
 │   │
@@ -245,17 +247,16 @@ Farmlink_Backend/
 │   │   └── produceRoutes.js     # Marketplace routes
 │   │
 │   ├── services/                 # Business service layer
+│   │   ├── emailService.js      # Email notification service
+│   │   ├── smsService.js        # SMS notification service
 │   │   └── userService.js       # User management services
 │   │
-│   ├── utils/                    # Utility functions
+│   ├── utils/                    # Utility functions & helpers
 │   │   ├── AppError.js          # Custom error class
-│   │   ├── auth.js              # Authentication helpers
-│   │   ├── emailService.js      # Email notification service
-│   │   ├── fileUploads.js       # File upload utilities
-│   │   ├── generateToken.js     # JWT token generation
+│   │   ├── auth.js              # JWT token generation & verification
+│   │   ├── fileUploads.js       # File upload utilities (Multer)
 │   │   ├── responseHandler.js   # Standardized API responses
-│   │   ├── smsService.js        # SMS notification service
-│   │   └── Validators.js        # Input validation rules
+│   │   └── validators.js        # Input validation rules
 │   │
 │   ├── app.js                    # Express app configuration
 │   └── server.js                 # Server startup & port binding
@@ -272,8 +273,10 @@ Farmlink_Backend/
 - **ES Modules**: Modern JavaScript import/export syntax throughout
 - **Middleware Pipeline**: Authentication, validation, error handling
 - **Service Layer**: Business logic abstraction from controllers
+- **Centralized Associations**: All model relationships defined in `models/index.js`
 - **Centralized Error Handling**: Consistent error responses across all endpoints
 - **Role-Based Access**: Granular permissions for farmers, customers, and admins
+- **Token Management**: Unified authentication utilities in `utils/auth.js`
 
 ## Contributing
 

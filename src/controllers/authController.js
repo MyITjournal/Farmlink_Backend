@@ -8,7 +8,6 @@ import {
 async function registerUser(req, res) {
   try {
     const {
-      username,
       firstName,
       lastName,
       email,
@@ -17,11 +16,11 @@ async function registerUser(req, res) {
       address,
       city,
       state,
+      country,
       nin,
       role = "customer",
     } = req.body;
     await createUser({
-      username,
       email,
       password,
       firstName,
@@ -30,6 +29,7 @@ async function registerUser(req, res) {
       address,
       city,
       state,
+      country,
       nin,
       role,
     });

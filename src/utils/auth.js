@@ -5,7 +5,7 @@ async function generateToken(user) {
   try {
     const payload = {
       id: user.user_uuid,
-      username: user.username,
+      fullName: user.fullName,
       role: user.role,
     };
     return jwt.sign(payload, config.JWT_SECRET, {
@@ -28,12 +28,12 @@ async function generateRefreshToken(user, token) {
   try {
     const payload = {
       id: user.user_uuid,
-      username: user.username,
+      fullName: user.fullName,
       role: user.role,
       tokenId: token,
     };
     return jwt.sign(payload, config.JWT_SECRET, {
-      expiresIn: config.JWT_EXPIRES_IN,
+      expiresIn: config.JWT_REFRESH_EXPIRES_IN || "30d",
     });
   } catch (error) {
     throw new Error("Error generating refresh token");

@@ -1,6 +1,6 @@
 import express from "express";
 import {
-  getCustomers,
+  getAllCustomers,
   getCustomerById,
   updateCustomer,
   deleteCustomer,
@@ -9,7 +9,7 @@ import { protect } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
-router.get("/", protect, getCustomers);
+router.get("/", protect, getAllCustomers);
 router.get("/:id", protect, getCustomerById);
 router.put("/:id", protect, updateCustomer);
 router.delete("/:id", protect, deleteCustomer);

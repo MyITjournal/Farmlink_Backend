@@ -130,9 +130,26 @@ async function getFarmerDashboard(req, res) {
   }
 }
 
+// Get all farmers
+async function getAllFarmers(req, res) {
+  try {
+    const farmers = await Farmer.findAll({
+      order: [["createdAt", "DESC"]],
+    });
+    res.status(200).json({
+      success: true,
+      message: "Farmers retrieved successfully",
+      data: farmers,
+    });
+  } catch (error) {
+    throw new AppError(error.message || "Unable to fetch farmers", 500);
+  }
+}
+
 export {
   addProduct,
   editProduct,
   toggleProductStatus,
   getFarmerDashboard,
+  getAllFarmers,
 };

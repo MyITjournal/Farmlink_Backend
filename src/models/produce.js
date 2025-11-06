@@ -16,7 +16,7 @@ const Produce = sequelize.define("Produce", {
     type: DataTypes.UUID,
     references: {
       model: Farmer,
-      key: "id",
+      key: "userId",
     },
     allowNull: false,
   },
@@ -69,9 +69,5 @@ const Produce = sequelize.define("Produce", {
     defaultValue: "Active",
   },
 });
-
-// Define the relationship: A Farmer can have many Produce listings
-Farmer.hasMany(Produce, { foreignKey: "farmerId" });
-Produce.belongsTo(Farmer, { foreignKey: "farmerId" });
 
 export default Produce;
