@@ -55,8 +55,11 @@
 
 ### Development Dependencies
 
-- **nodemon**: Auto-restart server during development
-- **jest**: Testing framework (if applicable)
+```json
+{
+  "nodemon": "Auto-restart server during development"
+}
+```
 
 ## Git repository
 
@@ -148,18 +151,18 @@ npm run dev
 
 ### Authentication Legend:
 
-- ** Public**: No authentication required
-- ** Required**: JWT token required in Authorization header
-- ** Farmer Auth**: Must be authenticated farmer
-- ** Admin Auth**: Must be authenticated admin
-- ** Customer Auth**: Must be authenticated customer
+- **Public**: No authentication required
+- **Required**: JWT token required in Authorization header
+- **Farmer Auth**: Must be authenticated farmer
+- **Admin Auth**: Must be authenticated admin
+- **Customer Auth**: Must be authenticated customer
 
 ### Request Headers:
 
 ```bash
 # For authenticated endpoints
 Authorization: Bearer <your_jwt_token>
-Content-Type: application/json
+WContent-Type: application/json
 ```
 
 ### Response Format:
