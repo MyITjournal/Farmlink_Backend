@@ -5,16 +5,17 @@ import AppError from "../utils/AppError.js";
 // Adding a new product
 async function addProduct(req, res) {
   try {
-    const { productName, pricePerUnit, quantity } = req.body;
-    const farmerId = req.user.id;
+    const { productName, pricePerUnit, quantity, category } = req.body;
+    const userId = req.user.userId;
 
     if (!productName || !pricePerUnit || !quantity) {
       throw new AppError("Product name, price, and quantity are required", 400);
     }
 
     const newProduct = await Produce.create({
-      farmerId,
+      userId,
       productName,
+      category,
       pricePerUnit: parseFloat(pricePerUnit),
       quantity: parseInt(quantity),
       status: "Active",
@@ -35,10 +36,10 @@ async function editProduct(req, res) {
   try {
     const { id } = req.params;
     const { productName, pricePerUnit, quantity } = req.body;
-    const farmerId = req.user.id;
+    const userId = req.user.userId;
 
     const product = await Produce.findOne({
-      where: { id, farmerId },
+      where: { id, userId },
     });
 
     if (!product) {
@@ -65,10 +66,10 @@ async function editProduct(req, res) {
 async function toggleProductStatus(req, res) {
   try {
     const { id } = req.params;
-    const farmerId = req.user.id;
+    const userId = req.user.userId;
 
     const product = await Produce.findOne({
-      where: { id, farmerId },
+      where: { id, userId },
     });
 
     if (!product) {
@@ -95,9 +96,9 @@ async function toggleProductStatus(req, res) {
 // Merged farmer dashboard
 async function getFarmerDashboard(req, res) {
   try {
-    const farmerId = req.user.id;
+    const userId = req.user.userId;
 
-    const farmer = await Farmer.findByPk(farmerId);
+    const farmer = await Farmer.findByPk(userId);
     if (!farmer) {
       throw new AppError("Farmer not found", 404);
     }
@@ -115,7 +116,7 @@ async function getFarmerDashboard(req, res) {
       message: "Dashboard loaded successfully",
       data: {
         farmer: {
-          id: farmer.id,
+          id: user.id,
           fullName: farmer.fullName,
         },
         products,
@@ -136,9 +137,11 @@ async function getAllFarmers(req, res) {
     const farmers = await Farmer.findAll({
       order: [["createdAt", "DESC"]],
     });
+    const totalFarmers = farmers.length;
     res.status(200).json({
       success: true,
       message: "Farmers retrieved successfully",
+      total: totalFarmers,
       data: farmers,
     });
   } catch (error) {

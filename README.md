@@ -129,7 +129,7 @@ npm run dev
 | `POST`                    | `/api/auth/verify-email-otp`       | Verify email OTP                  | Public         | None                                                            |
 | **FARMER ROUTES**         |                                    |                                   |                |                                                                 |
 | `POST`                    | `/api/farmers/products`            | Add new product                   | Farmer Auth    | `authMiddleware`                                                |
-| `PUT`                     | `/api/farmers/products/:id`        | Update existing product           | Farmer Auth    | `authMiddleware`                                                |
+| `PUT`                     | `/api/farmers/products/:id`        | Edit existing product             | Farmer Auth    | `authMiddleware`                                                |
 | `PATCH`                   | `/api/farmers/products/:id/status` | Toggle product status             | Farmer Auth    | `authMiddleware`                                                |
 | `GET`                     | `/api/farmers/dashboard`           | Get farmer dashboard data         | Farmer Auth    | `authMiddleware`                                                |
 | `GET`                     | `/api/farmers/`                    | Get all farmers                   | Farmer Auth    | `authMiddleware`                                                |

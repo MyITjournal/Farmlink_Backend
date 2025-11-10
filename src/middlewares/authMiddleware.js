@@ -42,6 +42,10 @@ const protect = async (req, res, next) => {
     // Attach user if found, otherwise fallback to token payload
     if (dbUser) {
       req.user = dbUser;
+      // Ensure role is available from the token if not in the DB record
+      if (!req.user.role) {
+        req.user.role = role;
+      }
     } else if (role === "customer") {
       return res
         .status(401)

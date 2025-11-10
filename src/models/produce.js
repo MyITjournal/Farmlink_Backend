@@ -12,13 +12,13 @@ const Produce = sequelize.define("Produce", {
     primaryKey: true,
     autoIncrement: true,
   },
-  farmerId: {
+  userId: {
     type: DataTypes.UUID,
+    allowNull: true,
     references: {
       model: Farmer,
       key: "userId",
     },
-    allowNull: false,
   },
   productName: {
     type: DataTypes.STRING,

@@ -138,10 +138,7 @@ const syncDatabase = async (sequelize) => {
 
     // Sync all models - create/update tables
     console.log("Synchronizing database tables...");
-    await sequelize.sync({
-      alter: config.ENVIRONMENT === "development", // Only alter in development
-      force: false, // Never drop tables in production
-    });
+    await sequelize.sync();
     console.log("Database tables synchronized successfully");
 
     // Log table creation summary

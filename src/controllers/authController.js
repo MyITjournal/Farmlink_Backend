@@ -52,7 +52,8 @@ async function loginUser(req, res) {
 
 async function userProfile(req, res) {
   try {
-    const userId = req.user.id;
+    // Handle both User model (id) and role-specific models (userId)
+    const userId = req.user.userId || req.user.id;
     const userRole = req.user.role;
     const profile = await getUserProfile(userId, userRole);
     res.status(200).json({ success: true, data: profile });
