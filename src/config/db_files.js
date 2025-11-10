@@ -30,6 +30,10 @@ const sequelize = new Sequelize(
 export const connectDB = async () => {
   try {
     console.log(`Attempting to connect to database: ${config.DATABASE_NAME}`);
+    console.log(`Database host: ${config.DATABASE_HOST}`);
+    console.log(`Database port: ${config.DATABASE_PORT}`);
+    console.log(`Database user: ${config.DATABASE_USERNAME}`);
+    console.log(`Environment: ${config.ENVIRONMENT}`);
 
     // Try to connect to the target database using the global sequelize instance
     await sequelize.authenticate();
@@ -52,7 +56,13 @@ export const connectDB = async () => {
     } else {
       // Other connection errors (wrong credentials, server down, etc.)
       console.error("Database connection failed:", error.message);
+      console.error("Connection details:");
+      console.error(`  Host: ${config.DATABASE_HOST}`);
+      console.error(`  Port: ${config.DATABASE_PORT}`);
+      console.error(`  Database: ${config.DATABASE_NAME}`);
+      console.error(`  User: ${config.DATABASE_USERNAME}`);
       console.error("Check your database credentials and server status");
+      console.error("Full error:", error);
       process.exit(1);
     }
   }
