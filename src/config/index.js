@@ -4,12 +4,33 @@ dotenv.config();
 export default {
   ENVIRONMENT: process.env.NODE_ENV || "dev",
   PORT: Number(process.env.PORT || 3000),
-  DATABASE_NAME: process.env.DB_NAME || process.env.MYSQLDATABASE || "db_name",
-  DATABASE_USERNAME: process.env.DB_USER || process.env.MYSQLUSER || "root",
-  DATABASE_PASSWORD: process.env.DB_PASSWORD || process.env.MYSQLPASSWORD || "password",
-  DATABASE_HOST: process.env.DB_HOST || process.env.MYSQLHOST || "localhost",
-  DATABASE_PORT: Number(process.env.DB_PORT || process.env.MYSQLPORT || 3306),
-  DATABASE_DIALECT: process.env.DB_DIALECT || "mysql",
+  DATABASE_NAME:
+    process.env.DB_NAME ||
+    process.env.PGDATABASE ||
+    process.env.POSTGRES_DATABASE ||
+    "farmlink_db",
+  DATABASE_USERNAME:
+    process.env.DB_USER ||
+    process.env.PGUSER ||
+    process.env.POSTGRES_USER ||
+    "postgres",
+  DATABASE_PASSWORD:
+    process.env.DB_PASSWORD ||
+    process.env.PGPASSWORD ||
+    process.env.POSTGRES_PASSWORD ||
+    "password",
+  DATABASE_HOST:
+    process.env.DB_HOST ||
+    process.env.PGHOST ||
+    process.env.POSTGRES_HOST ||
+    "localhost",
+  DATABASE_PORT: Number(
+    process.env.DB_PORT ||
+      process.env.PGPORT ||
+      process.env.POSTGRES_PORT ||
+      5432
+  ),
+  DATABASE_DIALECT: process.env.DB_DIALECT || "postgres",
   SMTP_HOST: process.env.SMTP_HOST || "smtp.example.com",
   SMTP_PORT: Number(process.env.SMTP_PORT || 587),
   SMTP_USER: process.env.SMTP_USER || "dev",

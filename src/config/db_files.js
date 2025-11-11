@@ -30,7 +30,7 @@ export const connectDB = async () => {
   try {
     // Connect to database
     await sequelize.authenticate();
-    console.log(`MySQL Connected: ${config.DATABASE_HOST}`);
+    console.log(`PostgreSQL Connected: ${config.DATABASE_HOST}`);
 
     // Import models and sync
     await import("../models/index.js");
