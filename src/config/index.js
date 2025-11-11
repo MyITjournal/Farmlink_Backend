@@ -44,6 +44,3 @@ export default {
   JWT_SECRET: process.env.JWT_SECRET || "your_jwt_secret_key",
   JWT_EXPIRES_IN: Number(process.env.JWT_EXPIRES_IN || 7200),
 };
-
-// const connect_uri = `mongodb://${DATABASE_USERNAME}:${DATABASE_PASSWORD}@${DATABASE_HOST}:${DATABASE_PORT}/${DATABASE_NAME}`
-// await mongoose.connect(connect_uri);
