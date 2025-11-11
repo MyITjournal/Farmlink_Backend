@@ -1,10 +1,22 @@
 import Customer from "../models/customer.js";
+import User from "../models/user.js";
 import AppError from "../utils/AppError.js";
 
-async function getAllCustomers(req, res) {
+const getAllCustomers = async (req, res) => {
   try {
     const customers = await Customer.findAll({
-      attributes: { exclude: ["password"] },
+      include: [
+        {
+          model: User,
+          attributes: [
+            "user_uuid",
+            "firstName",
+            "lastName",
+            "email",
+            "phoneNumber",
+          ],
+        },
+      ],
       order: [["createdAt", "DESC"]],
     });
 
@@ -14,15 +26,31 @@ async function getAllCustomers(req, res) {
       data: customers,
     });
   } catch (error) {
-    throw new AppError(error.message || "Unable to fetch customers", 500);
+    const statusCode = error.statusCode || 500;
+    res.status(statusCode).json({
+      success: false,
+      message: error.message || "Unable to fetch customers",
+    });
   }
-}
+};
 
-async function getCustomerById(req, res) {
+const getCustomerById = async (req, res) => {
   try {
-    const id = req.params.id;
-    const customer = await Customer.findByPk(id, {
-      attributes: { exclude: ["password"] },
+    const { id } = req.params;
+    const customer = await Customer.findOne({
+      where: { userId: id },
+      include: [
+        {
+          model: User,
+          attributes: [
+            "user_uuid",
+            "firstName",
+            "lastName",
+            "email",
+            "phoneNumber",
+          ],
+        },
+      ],
     });
 
     if (!customer) {
@@ -35,46 +63,45 @@ async function getCustomerById(req, res) {
       data: customer,
     });
   } catch (error) {
-    throw new AppError(error.message || "Unable to fetch customer", 500);
-  }
-}
-
-async function updateCustomer(req, res) {
-  try {
-    const id = req.params.id;
-    const updateFields = req.body;
-    delete updateFields.password;
-
-    const result = await Customer.update(updateFields, {
-      where: { id },
-      returning: true,
-      individualHooks: true,
+    const statusCode = error.statusCode || 500;
+    res.status(statusCode).json({
+      success: false,
+      message: error.message || "Unable to fetch customer",
     });
+  }
+};
 
-    const rowsUpdated = result[0];
-    const updatedCustomer = result[1][0];
+const updateCustomer = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updateFields = req.body;
 
-    if (rowsUpdated === 0) {
+    const customer = await Customer.findOne({ where: { userId: id } });
+
+    if (!customer) {
       throw new AppError("Customer not found", 404);
     }
 
-    const customerData = updatedCustomer.get({ plain: true });
-    delete customerData.password;
+    await customer.update(updateFields);
 
     res.status(200).json({
       success: true,
       message: "Customer updated successfully",
-      data: customerData,
+      data: customer,
     });
   } catch (error) {
-    throw new AppError(error.message || "Unable to update customer", 500);
+    const statusCode = error.statusCode || 500;
+    res.status(statusCode).json({
+      success: false,
+      message: error.message || "Unable to update customer",
+    });
   }
-}
+};
 
-async function deleteCustomer(req, res) {
+const deleteCustomer = async (req, res) => {
   try {
-    const id = req.params.id;
-    const deleted = await Customer.destroy({ where: { id } });
+    const { id } = req.params;
+    const deleted = await Customer.destroy({ where: { userId: id } });
 
     if (!deleted) {
       throw new AppError("Customer not found", 404);
@@ -86,8 +113,12 @@ async function deleteCustomer(req, res) {
       data: { id },
     });
   } catch (error) {
-    throw new AppError(error.message || "Unable to delete customer", 500);
+    const statusCode = error.statusCode || 500;
+    res.status(statusCode).json({
+      success: false,
+      message: error.message || "Unable to delete customer",
+    });
   }
-}
+};
 
 export { getAllCustomers, getCustomerById, updateCustomer, deleteCustomer };

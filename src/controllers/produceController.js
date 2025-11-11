@@ -4,7 +4,7 @@ import AppError from "../utils/AppError.js";
 
 const { Produce, Farmer } = models;
 
-async function getAllProduceListings(req, res) {
+const getAllProduceListings = async (req, res) => {
   const { category, minPrice, maxPrice } = req.query;
   const whereClause = {
     status: "Active",
@@ -24,12 +24,10 @@ async function getAllProduceListings(req, res) {
   try {
     const listings = await Produce.findAll({
       where: whereClause,
-      // Include the Farmer's data (seller) for display on the Product Card
       include: [
         {
           model: Farmer,
-          attributes: ["fullName", "location", "rating", "verificationStatus"],
-          // Ensure the farmer is verified before showing their products
+          attributes: ["farmName", "farmType", "verificationStatus"],
           where: { verificationStatus: "Verified" },
         },
       ],
@@ -42,11 +40,15 @@ async function getAllProduceListings(req, res) {
       data: listings,
     });
   } catch (error) {
-    throw new AppError(error.message || "Failed to retrieve marketplace listings", 500);
+    const statusCode = error.statusCode || 500;
+    res.status(statusCode).json({
+      success: false,
+      message: error.message || "Failed to retrieve marketplace listings",
+    });
   }
-}
+};
 
-async function getProduceDetails(req, res) {
+const getProduceDetails = async (req, res) => {
   const { listingId } = req.params;
 
   try {
@@ -55,20 +57,17 @@ async function getProduceDetails(req, res) {
       include: [
         {
           model: Farmer,
-          attributes: [
-            "fullName",
-            "phone",
-            "location",
-            "rating",
-            "verificationStatus",
-          ],
+          attributes: ["farmName", "farmType", "bio", "verificationStatus"],
           where: { verificationStatus: "Verified" },
         },
       ],
     });
 
     if (!listing) {
-      throw new AppError("Product listing not found or is currently unavailable", 404);
+      throw new AppError(
+        "Product listing not found or is currently unavailable",
+        404
+      );
     }
 
     res.status(200).json({
@@ -77,26 +76,31 @@ async function getProduceDetails(req, res) {
       data: listing,
     });
   } catch (error) {
-    throw new AppError(error.message || "Failed to retrieve product details", 500);
+    const statusCode = error.statusCode || 500;
+    res.status(statusCode).json({
+      success: false,
+      message: error.message || "Failed to retrieve product details",
+    });
   }
-}
+};
 
 // Allows a buyer to rate a farmer after a transaction (implied post-purchase feature).
-async function rateFarmer(req, res) {
+const rateFarmer = async (req, res) => {
   const { farmerId, rating } = req.body;
-  const buyerId = req.user.id; // Buyer must be logged in
 
   try {
     if (rating < 1 || rating > 5) {
       throw new AppError("Rating must be between 1 and 5", 400);
     }
 
-    const farmer = await Farmer.findByPk(farmerId);
+    const farmer = await Farmer.findOne({ where: { userId: farmerId } });
 
     if (!farmer) {
       throw new AppError("Farmer not found", 404);
     }
-    const newRating = (parseFloat(farmer.rating) + rating) / 2;
+
+    const currentRating = parseFloat(farmer.rating) || 0;
+    const newRating = (currentRating + rating) / 2;
 
     await farmer.update({ rating: newRating.toFixed(2) });
 
@@ -106,12 +110,12 @@ async function rateFarmer(req, res) {
       data: { newRating: newRating.toFixed(2) },
     });
   } catch (error) {
-    throw new AppError(error.message || "Failed to submit rating", 500);
+    const statusCode = error.statusCode || 500;
+    res.status(statusCode).json({
+      success: false,
+      message: error.message || "Failed to submit rating",
+    });
   }
-}
-
-export {
-  getAllProduceListings,
-  getProduceDetails,
-  rateFarmer,
 };
+
+export { getAllProduceListings, getProduceDetails, rateFarmer };

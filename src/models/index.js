@@ -17,14 +17,14 @@ Customer.belongsTo(Farmer, { foreignKey: "farmerId", as: "farmer" });
 // Farmer relationships
 Farmer.belongsTo(User, { foreignKey: "userId", as: "user" });
 Farmer.hasOne(Admin, { foreignKey: "userId" });
-Farmer.hasMany(Produce, { foreignKey: "farmerId" });
+Farmer.hasMany(Produce, { foreignKey: "userId" }); // Changed from farmerId to userId
 Farmer.hasMany(Customer, { foreignKey: "farmerId", as: "customers" });
 
 // Admin relationships
 Admin.belongsTo(Farmer, { foreignKey: "userId" });
 
 // Produce relationships
-Produce.belongsTo(Farmer, { foreignKey: "farmerId" });
+Produce.belongsTo(Farmer, { foreignKey: "userId" }); // Changed from farmerId to userId
 
 // Customer ↔ Verification relationship (one-to-many)
 Verification.belongsTo(Customer, { foreignKey: "customerId" });

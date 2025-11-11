@@ -14,9 +14,9 @@ router.get("/", getAllProduceListings);
 router.get("/:listingId", getProduceDetails);
 router.post(
   "/rate",
+  protect,
   rateFarmerValidator,
   validationMiddleware,
-  protect,
   rateFarmer
 );
 

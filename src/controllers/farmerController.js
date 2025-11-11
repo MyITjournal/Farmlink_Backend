@@ -3,7 +3,7 @@ import Farmer from "../models/farmer.js";
 import AppError from "../utils/AppError.js";
 
 // Adding a new product
-async function addProduct(req, res) {
+const addProduct = async (req, res) => {
   try {
     const { productName, pricePerUnit, quantity, category } = req.body;
     const userId = req.user.userId;
@@ -27,12 +27,16 @@ async function addProduct(req, res) {
       data: newProduct,
     });
   } catch (error) {
-    throw new AppError(error.message || "Server error", 500);
+    const statusCode = error.statusCode || 500;
+    res.status(statusCode).json({
+      success: false,
+      message: error.message || "Server error",
+    });
   }
-}
+};
 
 // Editing an already existing product
-async function editProduct(req, res) {
+const editProduct = async (req, res) => {
   try {
     const { id } = req.params;
     const { productName, pricePerUnit, quantity } = req.body;
@@ -58,12 +62,16 @@ async function editProduct(req, res) {
       data: product,
     });
   } catch (error) {
-    throw new AppError(error.message || "Server error", 500);
+    const statusCode = error.statusCode || 500;
+    res.status(statusCode).json({
+      success: false,
+      message: error.message || "Server error",
+    });
   }
-}
+};
 
 // To know the status of each product
-async function toggleProductStatus(req, res) {
+const toggleProductStatus = async (req, res) => {
   try {
     const { id } = req.params;
     const userId = req.user.userId;
@@ -89,22 +97,26 @@ async function toggleProductStatus(req, res) {
       data: product,
     });
   } catch (error) {
-    throw new AppError(error.message || "Server error", 500);
+    const statusCode = error.statusCode || 500;
+    res.status(statusCode).json({
+      success: false,
+      message: error.message || "Server error",
+    });
   }
-}
+};
 
 // Merged farmer dashboard
-async function getFarmerDashboard(req, res) {
+const getFarmerDashboard = async (req, res) => {
   try {
     const userId = req.user.userId;
 
-    const farmer = await Farmer.findByPk(userId);
+    const farmer = await Farmer.findOne({ where: { userId } });
     if (!farmer) {
       throw new AppError("Farmer not found", 404);
     }
 
     const products = await Produce.findAll({
-      where: { farmerId },
+      where: { userId },
       order: [["createdAt", "DESC"]],
     });
 
@@ -116,8 +128,9 @@ async function getFarmerDashboard(req, res) {
       message: "Dashboard loaded successfully",
       data: {
         farmer: {
-          id: user.id,
-          fullName: farmer.fullName,
+          userId: farmer.userId,
+          farmName: farmer.farmName,
+          farmType: farmer.farmType,
         },
         products,
         stats: {
@@ -127,12 +140,16 @@ async function getFarmerDashboard(req, res) {
       },
     });
   } catch (error) {
-    throw new AppError(error.message || "Server error", 500);
+    const statusCode = error.statusCode || 500;
+    res.status(statusCode).json({
+      success: false,
+      message: error.message || "Server error",
+    });
   }
-}
+};
 
 // Get all farmers
-async function getAllFarmers(req, res) {
+const getAllFarmers = async (req, res) => {
   try {
     const farmers = await Farmer.findAll({
       order: [["createdAt", "DESC"]],
@@ -145,9 +162,13 @@ async function getAllFarmers(req, res) {
       data: farmers,
     });
   } catch (error) {
-    throw new AppError(error.message || "Unable to fetch farmers", 500);
+    const statusCode = error.statusCode || 500;
+    res.status(statusCode).json({
+      success: false,
+      message: error.message || "Server error",
+    });
   }
-}
+};
 
 export {
   addProduct,

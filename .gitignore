@@ -6,3 +6,4 @@ docs/
 db.js
 scripts/dev/
 test-direct-connection.js
+.example
